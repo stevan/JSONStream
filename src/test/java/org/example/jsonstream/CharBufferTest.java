@@ -24,7 +24,7 @@ class CharBufferTest {
             assertEquals(c.getNext().get(), '3');
             assertTrue(c.isDone());
         });
-        assertThrows(NoSuchElementException.class, () -> { c.getNext().get(); });
+        assertThrows(NoSuchElementException.class, () -> c.getNext().get());
     }
 
     @Test
@@ -38,9 +38,7 @@ class CharBufferTest {
             c.skip(1);
             assertTrue(c.isDone());
         });
-        assertThrows(NoSuchElementException.class, () -> {
-            c.peek().get();
-        });
+        assertThrows(NoSuchElementException.class, () -> c.peek().get());
     }
 
     @Test
@@ -49,7 +47,7 @@ class CharBufferTest {
         assertFalse(c.isDone());
         c.skip(5);
         assertTrue(c.isDone());
-        assertThrows(NoSuchElementException.class, () -> { c.getNext().get(); });
+        assertThrows(NoSuchElementException.class, () -> c.getNext().get());
     }
 
     @Test
@@ -69,9 +67,7 @@ class CharBufferTest {
             assertEquals(c.getNext().get(), '5');
             assertTrue(c.isDone());
         });
-        assertThrows(NoSuchElementException.class, () -> {
-            c.getNext().get();
-        });
+        assertThrows(NoSuchElementException.class, () -> c.getNext().get());
     }
 
     @Test
@@ -103,7 +99,7 @@ class CharBufferTest {
             assertEquals(c.getNext().get(), '4');
             assertFalse(c.isDone());
         });
-        assertThrows(NoSuchElementException.class, () -> { c.skipWhitespaceAndPeek().get(); });
+        assertThrows(NoSuchElementException.class, () -> c.skipWhitespaceAndPeek().get());
         assertTrue(c.isDone());
     }
 }
