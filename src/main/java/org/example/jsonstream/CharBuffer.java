@@ -1,15 +1,18 @@
 package org.example.jsonstream;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class CharBuffer {
 
-    final char[] chars;
+    String source;
     int index;
 
-    CharBuffer(String source) {
+    CharBuffer(String src) {
         index = 0;
-        chars = source.toCharArray();
+        source = src;
     }
 
     public Optional<Character> getNext() {
@@ -20,12 +23,12 @@ public class CharBuffer {
 
     public Optional<Character> peek() {
         if (isDone()) return Optional.empty();
-        Character c = chars[index];
+        Character c = source.charAt(index);
         return Optional.of(c);
     }
 
     public boolean isDone() {
-        return index >= chars.length;
+        return index >= source.length();
     }
 
     public void skip(int n) {
@@ -33,9 +36,18 @@ public class CharBuffer {
     }
 
     public Optional<Character> skipWhitespaceAndPeek() {
-        while (!isDone() && Character.isWhitespace(chars[index])) {
+        while (!isDone() && Character.isWhitespace(source.charAt(index))) {
             index++;
         }
         return peek();
+    }
+    
+    @Override
+    public String toString() {
+        return "Buffer{" +
+                   source.substring(0, index)
+                   + "<" + source.charAt(index) + ">" +
+                   source.substring(index + 1)
+                   + "}["+ index + "]";
     }
 }

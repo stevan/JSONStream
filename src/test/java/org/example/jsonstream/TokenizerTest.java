@@ -70,8 +70,8 @@ class TokenizerTest {
             assertTrue(token.isPresent());
             assertInstanceOf(Tokenizer.EndObject.class, token.get());
         });
-
-        assertTrue(tokenizer.state.empty());
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.ROOT);
         assertSame(tokenizer.nextState, Tokenizer.State.ROOT);
     }
 
@@ -119,6 +119,7 @@ class TokenizerTest {
         assertDoesNotThrow(() -> {
             Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
             assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
             assertInstanceOf(Tokenizer.StartObject.class, token.get());
         });
         
@@ -128,6 +129,7 @@ class TokenizerTest {
         assertDoesNotThrow(() -> {
             Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
             assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
             assertInstanceOf(Tokenizer.StartProperty.class, token.get());
         });
         
@@ -137,6 +139,7 @@ class TokenizerTest {
         assertDoesNotThrow(() -> {
             Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
             assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
             assertInstanceOf(Tokenizer.AddString.class, token.get());
             
             Tokenizer.AddString str = (Tokenizer.AddString) token.get();
@@ -149,6 +152,7 @@ class TokenizerTest {
         assertDoesNotThrow(() -> {
             Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
             assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
             assertInstanceOf(Tokenizer.AddString.class, token.get());
             
             Tokenizer.AddString str = (Tokenizer.AddString) token.get();
@@ -156,11 +160,12 @@ class TokenizerTest {
         });
         
         assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);
-        assertSame(tokenizer.nextState, Tokenizer.State.END_PROPERTY);
+        assertSame(tokenizer.nextState, Tokenizer.State.PROPERTY);
         
         assertDoesNotThrow(() -> {
             Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
             assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
             assertInstanceOf(Tokenizer.EndProperty.class, token.get());
         });
         
@@ -170,10 +175,210 @@ class TokenizerTest {
         assertDoesNotThrow(() -> {
             Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
             assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
             assertInstanceOf(Tokenizer.EndObject.class, token.get());
         });
         
-        assertTrue(tokenizer.state.empty());
+        assertSame(tokenizer.state.peek(), Tokenizer.State.ROOT);
+        assertSame(tokenizer.nextState, Tokenizer.State.ROOT);
+    }
+    
+    @Test
+    void produceToken_ObjectTokensWithSinglePropertyAndComplexValue() {
+        CharBuffer buffer = new CharBuffer("{\"foo\":{}}");
+        Tokenizer tokenizer = new Tokenizer();
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
+            assertInstanceOf(Tokenizer.StartObject.class, token.get());
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.OBJECT);
+        assertSame(tokenizer.nextState, Tokenizer.State.PROPERTY);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
+            assertInstanceOf(Tokenizer.StartProperty.class, token.get());
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);
+        assertSame(tokenizer.nextState, Tokenizer.State.STRING_LITERAL);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
+            assertInstanceOf(Tokenizer.AddString.class, token.get());
+            
+            Tokenizer.AddString str = (Tokenizer.AddString) token.get();
+            assertEquals(str.getValue(), "foo");
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);
+        assertSame(tokenizer.nextState, Tokenizer.State.PROPERTY);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
+            assertInstanceOf(Tokenizer.StartObject.class, token.get());
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.OBJECT);
+        assertSame(tokenizer.nextState, Tokenizer.State.PROPERTY);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
+            assertInstanceOf(Tokenizer.EndObject.class, token.get());
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);
+        assertSame(tokenizer.nextState, Tokenizer.State.PROPERTY);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
+            assertInstanceOf(Tokenizer.EndProperty.class, token.get());
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.OBJECT);
+        assertSame(tokenizer.nextState, Tokenizer.State.OBJECT);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
+            assertInstanceOf(Tokenizer.EndObject.class, token.get());
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.ROOT);
+        assertSame(tokenizer.nextState, Tokenizer.State.ROOT);
+    }
+    
+    @Test
+    void produceToken_ObjectTokensWithTwoProperties() {
+        CharBuffer buffer = new CharBuffer("{\"foo\":\"bar\",\"baz\":\"gorch\"}");
+        Tokenizer tokenizer = new Tokenizer();
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
+            assertInstanceOf(Tokenizer.StartObject.class, token.get());
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.OBJECT);
+        assertSame(tokenizer.nextState, Tokenizer.State.PROPERTY);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
+            assertInstanceOf(Tokenizer.StartProperty.class, token.get());
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);
+        assertSame(tokenizer.nextState, Tokenizer.State.STRING_LITERAL);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString() + " : " + tokenizer.nextState);
+            assertInstanceOf(Tokenizer.AddString.class, token.get());
+            
+            Tokenizer.AddString str = (Tokenizer.AddString) token.get();
+            assertEquals(str.getValue(), "foo");
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);
+        assertSame(tokenizer.nextState, Tokenizer.State.PROPERTY);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString() + " : " + tokenizer.nextState);
+            assertInstanceOf(Tokenizer.AddString.class, token.get());
+            
+            Tokenizer.AddString str = (Tokenizer.AddString) token.get();
+            assertEquals(str.getValue(), "bar");
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);
+        assertSame(tokenizer.nextState, Tokenizer.State.PROPERTY);
+        
+        assertDoesNotThrow(() -> {
+            System.out.println(buffer.toString());
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            System.out.println(buffer.toString());
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString() + " : " + tokenizer.nextState);
+            assertInstanceOf(Tokenizer.EndProperty.class, token.get());
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.OBJECT);
+        assertSame(tokenizer.nextState, Tokenizer.State.OBJECT);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
+            assertInstanceOf(Tokenizer.StartProperty.class, token.get());
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);
+        assertSame(tokenizer.nextState, Tokenizer.State.STRING_LITERAL);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
+            assertInstanceOf(Tokenizer.AddString.class, token.get());
+            
+            Tokenizer.AddString str = (Tokenizer.AddString) token.get();
+            assertEquals(str.getValue(), "baz");
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);
+        assertSame(tokenizer.nextState, Tokenizer.State.PROPERTY);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
+            assertInstanceOf(Tokenizer.AddString.class, token.get());
+            
+            Tokenizer.AddString str = (Tokenizer.AddString) token.get();
+            assertEquals(str.getValue(), "gorch");
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);
+        assertSame(tokenizer.nextState, Tokenizer.State.PROPERTY);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
+            assertInstanceOf(Tokenizer.EndProperty.class, token.get());
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.OBJECT);
+        assertSame(tokenizer.nextState, Tokenizer.State.OBJECT);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            System.out.println(token.get().toString() + " -> " + tokenizer.state.toString());
+            assertInstanceOf(Tokenizer.EndObject.class, token.get());
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.ROOT);
         assertSame(tokenizer.nextState, Tokenizer.State.ROOT);
     }
 }
