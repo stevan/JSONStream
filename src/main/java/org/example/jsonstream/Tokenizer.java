@@ -31,25 +31,20 @@ public class Tokenizer {
     public static class AddNull extends Token {}
 
     public static class Constant extends Token {}
-    public class AddKey extends Constant {
-        String key;
-        AddKey(String k) { key = k; }
-        public String getValue() { return key; }
-    }
     public class AddString extends Constant {
         String value;
         AddString(String s) { value = s; }
         public String getValue() { return value; }
     }
-    public class AddInt extends Constant {
-        Integer value;
-        AddInt(Integer i) { value = i; }
-        public Integer getValue() { return value; }
-    }
-    public class AddFloat extends Constant {
-        Float value;
-        AddFloat(Float f) { value = f; }
-        public Float getValue() { return value; }
+    public class AddNumber extends Constant {
+        Integer ival;
+        Float fval;
+        AddNumber(Integer i) { ival = i; }
+        AddNumber(Float f) { fval = f; }
+        public boolean hasIntValue() { return ival != null; }
+        public Integer getIntValue() { return ival; }
+        public boolean hasFloatValue() { return fval != null; }
+        public Float getFloatValue() { return fval; }
     }
 
     enum State {
@@ -66,8 +61,7 @@ public class Tokenizer {
         END_ITEM,
         KEY_LITERAL,
         STRING_LITERAL,
-        INT_LITERAL,
-        FLOAT_LITERAL,
+        NUMERIC_LITERAL,
         FALSE_LITERAL,
         TRUE_LITERAL,
         NULL_LITERAL,
@@ -115,14 +109,10 @@ public class Tokenizer {
                 return item(buffer);
             case END_ITEM:
                 return endItem(buffer);
-            case KEY_LITERAL:
-                return keyLiteral(buffer);
             case STRING_LITERAL:
                 return stringLiteral(buffer);
-            case INT_LITERAL:
-                return intLiteral(buffer);
-            case FLOAT_LITERAL:
-                return floatLiteral(buffer);
+            case NUMERIC_LITERAL:
+                return numericLiteral(buffer);
             case FALSE_LITERAL:
                 return falseLiteral(buffer);
             case TRUE_LITERAL:
@@ -130,10 +120,10 @@ public class Tokenizer {
             case NULL_LITERAL:
                 return nullLiteral(buffer);
             case ERROR:
-                // TODO: this should do something better than this
+                // XXX - this should do something better than this
                 throw new Exception();
             default:
-                // TODO: This should return an ErrorToken
+                // XXX - This should return an ErrorToken
                 throw new Exception();
         }
     }
@@ -148,18 +138,51 @@ public class Tokenizer {
                 case '[':
                     return array(buffer);
                 default:
-                    // TODO: this should set nextState to ERROR perhaps?
+                    // XXX - this should set nextState to ERROR perhaps?
                     return Optional.of(new ErrorToken("The root node must be either an Object({}) or an Array([])"));
             }
         }).or(() -> end(buffer));
     }
 
     public Optional<Token> start(CharBuffer buffer) {
-        return Optional.empty();
+        Optional<Character> character = buffer.skipWhitespaceAndPeek();
+        
+        /*
+        elsif ( $char eq '-' ||  $char =~ /^[0-9]$/ ) {
+            return $self->numeric_literal;
+        }
+        else {
+            return token( ERROR, 'Unrecognized start character `'.$char.'`' );
+        }
+        * */
+        
+        return character.flatMap((c) -> {
+            switch (c) {
+                case '{':
+                    return object(buffer);
+                case '[':
+                    return array(buffer);
+                case '"':
+                    return stringLiteral(buffer);
+                case 't':
+                    return trueLiteral(buffer);
+                case 'f':
+                    return falseLiteral(buffer);
+                case 'n':
+                    return nullLiteral(buffer);
+                case '-':
+                    return numericLiteral(buffer);
+                default:
+                    if (Character.isDigit(c)) {
+                        return numericLiteral(buffer);
+                    }
+                    return Optional.of(new ErrorToken("Unrecognized start character ("+c+")"));
+            }
+        }).or(() -> end(buffer));
     }
 
     public Optional<Token> end(CharBuffer buffer) {
-        // TODO: this should set nextState to END perhaps?
+        // XXX - this should set nextState to END perhaps?
         return Optional.of(new NoToken());
     }
 
@@ -177,9 +200,9 @@ public class Tokenizer {
                     return Optional.empty();
                 case '}':
                     buffer.skip(1);
-                    // TODO: check if the state is not empty and peek() == OBJECT
+                    // XXX - check if the state is not empty and peek() == OBJECT
                     state.pop(); // exit the object context
-                    // TODO: check if the state is not empty here ...
+                    // XXX - check if the state is not empty here ...
                     nextState = state.pop(); // restore the previous one
                     return Optional.of(new EndObject());
                 default:
@@ -199,45 +222,15 @@ public class Tokenizer {
             switch (c) {
                 case '"':
                     state.push(State.PROPERTY);
-                    nextState = State.KEY_LITERAL;
+                    nextState = State.STRING_LITERAL;
                     return Optional.of(new StartProperty());
                 case ':':
-                    return Optional.empty();
+                    // XXX - check to be sure we are still in property state here
+                    buffer.skip(1);    // skip over the :
+                    return start(buffer); // and grab whatever value we find
                 default:
                     return object(buffer);
             }
-        }).or(() -> end(buffer));
-    }
-
-    public Optional<Token> keyLiteral(CharBuffer buffer) {
-        Optional<Character> character = buffer.get();
-
-        return character.flatMap((c) -> {
-            if (c != '"') {
-                return Optional.of(new ErrorToken("String must begin with a double-quote character"));
-            }
-
-            boolean done = false;
-            StringBuilder st = new StringBuilder();
-            while (!done) {
-                Optional<Character> nextChar = buffer.get();
-                if (nextChar.isPresent()) {
-                    Character next = nextChar.get();
-                    switch (next) {
-                        case '"':
-                            done = true;
-                            break;
-                        default:
-                            st.append(next);
-                    }
-                }
-                else {
-                    done = true;
-                }
-            }
-
-            nextState = State.PROPERTY; // go back to property to finish this ...
-            return Optional.of(new AddKey(st.toString()));
         }).or(() -> end(buffer));
     }
 
@@ -260,16 +253,30 @@ public class Tokenizer {
     public Optional<Token> endItem(CharBuffer buffer) {
         return Optional.empty();
     }
-
+    
     public Optional<Token> stringLiteral(CharBuffer buffer) {
-        return Optional.empty();
+        Optional<Character> character = buffer.getNext(); // grab the quote character
+        
+        return character.flatMap((c) -> {
+            if (c != '"') {
+                return Optional.of(new ErrorToken("String must begin with a double-quote character"));
+            }
+            
+            StringBuilder acc = new StringBuilder();
+            
+            // XXX - this should handle escape chars
+            for (Optional<Character> next = buffer.getNext(); // get the first character
+                 next.isPresent() && !next.get().equals('"'); // continue if it is not empty or a quote
+                 next = buffer.getNext()) {                   // grab another for the next go round
+                acc.append(next.get());                       // append all the characters
+            }
+            
+            nextState = State.PROPERTY; // go back to property to finish this ...
+            return Optional.of(new AddString(acc.toString()));
+        }).or(() -> end(buffer));
     }
 
-    public Optional<Token> intLiteral(CharBuffer buffer) {
-        return Optional.empty();
-    }
-
-    public Optional<Token> floatLiteral(CharBuffer buffer) {
+    public Optional<Token> numericLiteral(CharBuffer buffer) {
         return Optional.empty();
     }
 

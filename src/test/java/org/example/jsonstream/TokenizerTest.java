@@ -96,15 +96,15 @@ class TokenizerTest {
         });
 
         assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);
-        assertSame(tokenizer.nextState, Tokenizer.State.KEY_LITERAL);
+        assertSame(tokenizer.nextState, Tokenizer.State.STRING_LITERAL);
 
         assertDoesNotThrow(() -> {
             Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
             assertTrue(token.isPresent());
-            assertInstanceOf(Tokenizer.AddKey.class, token.get());
+            assertInstanceOf(Tokenizer.AddString.class, token.get());
 
-            Tokenizer.AddKey k = (Tokenizer.AddKey) token.get();
-            assertEquals(k.getValue(), "foo");
+            Tokenizer.AddString str = (Tokenizer.AddString) token.get();
+            assertEquals(str.getValue(), "foo");
         });
 
         assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);

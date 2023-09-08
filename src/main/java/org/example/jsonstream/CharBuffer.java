@@ -12,7 +12,7 @@ public class CharBuffer {
         chars = source.toCharArray();
     }
 
-    public Optional<Character> get() {
+    public Optional<Character> getNext() {
         Optional<Character> c = peek();
         index++;
         return c;
