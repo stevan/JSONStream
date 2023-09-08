@@ -110,4 +110,70 @@ class TokenizerTest {
         assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);
         assertSame(tokenizer.nextState, Tokenizer.State.PROPERTY);
     }
+    
+    @Test
+    void produceToken_ObjectTokensWithSingleProperty() {
+        CharBuffer buffer = new CharBuffer("{\"foo\":\"bar\"}");
+        Tokenizer tokenizer = new Tokenizer();
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            assertInstanceOf(Tokenizer.StartObject.class, token.get());
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.OBJECT);
+        assertSame(tokenizer.nextState, Tokenizer.State.PROPERTY);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            assertInstanceOf(Tokenizer.StartProperty.class, token.get());
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);
+        assertSame(tokenizer.nextState, Tokenizer.State.STRING_LITERAL);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            assertInstanceOf(Tokenizer.AddString.class, token.get());
+            
+            Tokenizer.AddString str = (Tokenizer.AddString) token.get();
+            assertEquals(str.getValue(), "foo");
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);
+        assertSame(tokenizer.nextState, Tokenizer.State.PROPERTY);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            assertInstanceOf(Tokenizer.AddString.class, token.get());
+            
+            Tokenizer.AddString str = (Tokenizer.AddString) token.get();
+            assertEquals(str.getValue(), "bar");
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.PROPERTY);
+        assertSame(tokenizer.nextState, Tokenizer.State.END_PROPERTY);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            assertInstanceOf(Tokenizer.EndProperty.class, token.get());
+        });
+        
+        assertSame(tokenizer.state.peek(), Tokenizer.State.OBJECT);
+        assertSame(tokenizer.nextState, Tokenizer.State.OBJECT);
+        
+        assertDoesNotThrow(() -> {
+            Optional<Tokenizer.Token> token = tokenizer.produceToken(buffer);
+            assertTrue(token.isPresent());
+            assertInstanceOf(Tokenizer.EndObject.class, token.get());
+        });
+        
+        assertTrue(tokenizer.state.empty());
+        assertSame(tokenizer.nextState, Tokenizer.State.ROOT);
+    }
 }

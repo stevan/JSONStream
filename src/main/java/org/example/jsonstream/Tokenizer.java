@@ -52,14 +52,12 @@ public class Tokenizer {
         START,
         END,
         OBJECT,
-        END_OBJECT,
         PROPERTY,
         END_PROPERTY,
         ARRAY,
         END_ARRAY,
         ITEM,
         END_ITEM,
-        KEY_LITERAL,
         STRING_LITERAL,
         NUMERIC_LITERAL,
         FALSE_LITERAL,
@@ -93,8 +91,6 @@ public class Tokenizer {
 
             case OBJECT:
                 return object(buffer);
-            case END_OBJECT:
-                return endObject(buffer);
 
             case PROPERTY:
                 return property(buffer);
@@ -146,15 +142,6 @@ public class Tokenizer {
 
     public Optional<Token> start(CharBuffer buffer) {
         Optional<Character> character = buffer.skipWhitespaceAndPeek();
-        
-        /*
-        elsif ( $char eq '-' ||  $char =~ /^[0-9]$/ ) {
-            return $self->numeric_literal;
-        }
-        else {
-            return token( ERROR, 'Unrecognized start character `'.$char.'`' );
-        }
-        * */
         
         return character.flatMap((c) -> {
             switch (c) {
@@ -211,10 +198,6 @@ public class Tokenizer {
         }).or(() -> end(buffer));
     }
 
-    public Optional<Token> endObject(CharBuffer buffer) {
-        return Optional.empty();
-    }
-
     public Optional<Token> property(CharBuffer buffer) {
         Optional<Character> character = buffer.skipWhitespaceAndPeek();
 
@@ -227,7 +210,9 @@ public class Tokenizer {
                 case ':':
                     // XXX - check to be sure we are still in property state here
                     buffer.skip(1);    // skip over the :
-                    return start(buffer); // and grab whatever value we find
+                    Optional<Token> value = start(buffer); // and grab whatever value we find
+                    nextState = State.END_PROPERTY;
+                    return value;
                 default:
                     return object(buffer);
             }
@@ -235,7 +220,10 @@ public class Tokenizer {
     }
 
     public Optional<Token> endProperty(CharBuffer buffer) {
-        return Optional.empty();
+        // XXX - check if the state is not empty and peek() == PROPERTY
+        state.pop(); // exit the property context
+        nextState = State.OBJECT;
+        return Optional.of(new EndProperty());
     }
 
     public Optional<Token> array(CharBuffer buffer) {
