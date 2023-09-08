@@ -44,10 +44,9 @@ public class CharBuffer {
     
     @Override
     public String toString() {
-        return "Buffer{" +
-                   source.substring(0, index)
-                   + "<" + source.charAt(index) + ">" +
-                   source.substring(index + 1)
-                   + "}["+ index + "]";
+        return "CharBuffer{"+ source.substring(0, index)
+                        + "<<" + source.charAt(index) + ">>"
+                        + source.substring(index + 1)
+                        + "}["+index+"]";
     }
 }
