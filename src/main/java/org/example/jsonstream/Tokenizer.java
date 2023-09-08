@@ -1,6 +1,7 @@
 package org.example.jsonstream;
 
 import java.util.Optional;
+import java.util.Stack;
 
 public class Tokenizer {
 
@@ -59,6 +60,11 @@ public class Tokenizer {
         END_OBJECT,
         PROPERTY,
         END_PROPERTY,
+        ARRAY,
+        END_ARRAY,
+        ITEM,
+        END_ITEM,
+        KEY_LITERAL,
         STRING_LITERAL,
         INT_LITERAL,
         FLOAT_LITERAL,
@@ -68,7 +74,18 @@ public class Tokenizer {
         ERROR
     }
 
-    State nextState = State.ROOT;
+    enum Context {
+        IN_ROOT, IN_OBJECT, IN_ARRAY, IN_PROPERTY, IN_ITEM
+    }
+
+    State nextState;
+    Stack<State> state = new Stack<>();
+    Stack<Context> context = new Stack<>();
+
+    public Tokenizer() {
+        nextState = State.ROOT;
+        state.push(nextState);
+    }
 
     public Optional<Token> produceToken(CharBuffer buffer) throws Exception {
         switch (nextState) {
@@ -76,16 +93,30 @@ public class Tokenizer {
                 return root(buffer);
             case START:
                 return start(buffer);
+
             case END:
                 return end(buffer);
+
             case OBJECT:
                 return object(buffer);
             case END_OBJECT:
                 return endObject(buffer);
+
             case PROPERTY:
                 return property(buffer);
             case END_PROPERTY:
                 return endProperty(buffer);
+
+            case ARRAY:
+                return array(buffer);
+            case END_ARRAY:
+                return endArray(buffer);
+            case ITEM:
+                return item(buffer);
+            case END_ITEM:
+                return endItem(buffer);
+            case KEY_LITERAL:
+                return keyLiteral(buffer);
             case STRING_LITERAL:
                 return stringLiteral(buffer);
             case INT_LITERAL:
@@ -99,8 +130,10 @@ public class Tokenizer {
             case NULL_LITERAL:
                 return nullLiteral(buffer);
             case ERROR:
+                // TODO: this should do something better than this
                 throw new Exception();
             default:
+                // TODO: This should return an ErrorToken
                 throw new Exception();
         }
     }
@@ -109,11 +142,14 @@ public class Tokenizer {
         Optional<Character> character = buffer.skipWhitespaceAndPeek();
 
         return character.flatMap((c) -> {
-            if (c == '{' || c == '[') {
-                return object(buffer);
-            }
-            else {
-                return Optional.of(new ErrorToken("The root node must be either an Object({}) or an Array([])"));
+            switch (c) {
+                case '{':
+                    return object(buffer);
+                case '[':
+                    return array(buffer);
+                default:
+                    // TODO: this should set nextState to ERROR perhaps?
+                    return Optional.of(new ErrorToken("The root node must be either an Object({}) or an Array([])"));
             }
         }).or(() -> end(buffer));
     }
@@ -123,11 +159,33 @@ public class Tokenizer {
     }
 
     public Optional<Token> end(CharBuffer buffer) {
+        // TODO: this should set nextState to END perhaps?
         return Optional.of(new NoToken());
     }
 
     public Optional<Token> object(CharBuffer buffer) {
-        return Optional.empty();
+        Optional<Character> character = buffer.skipWhitespaceAndPeek();
+
+        return character.flatMap((c) -> {
+            switch (c) {
+                case '{':
+                    buffer.skip(1);
+                    state.push(State.OBJECT);
+                    nextState = State.PROPERTY;
+                    return Optional.of(new StartObject());
+                case ',':
+                    return Optional.empty();
+                case '}':
+                    buffer.skip(1);
+                    // TODO: check if the state is not empty and peek() == OBJECT
+                    state.pop(); // exit the object context
+                    // TODO: check if the state is not empty here ...
+                    nextState = state.pop(); // restore the previous one
+                    return Optional.of(new EndObject());
+                default:
+                    return Optional.of(new ErrorToken("Expected end of object or start of property, but found ("+c+")"));
+            }
+        }).or(() -> end(buffer));
     }
 
     public Optional<Token> endObject(CharBuffer buffer) {
@@ -135,10 +193,71 @@ public class Tokenizer {
     }
 
     public Optional<Token> property(CharBuffer buffer) {
-        return Optional.empty();
+        Optional<Character> character = buffer.skipWhitespaceAndPeek();
+
+        return character.flatMap((c) -> {
+            switch (c) {
+                case '"':
+                    state.push(State.PROPERTY);
+                    nextState = State.KEY_LITERAL;
+                    return Optional.of(new StartProperty());
+                case ':':
+                    return Optional.empty();
+                default:
+                    return object(buffer);
+            }
+        }).or(() -> end(buffer));
+    }
+
+    public Optional<Token> keyLiteral(CharBuffer buffer) {
+        Optional<Character> character = buffer.get();
+
+        return character.flatMap((c) -> {
+            if (c != '"') {
+                return Optional.of(new ErrorToken("String must begin with a double-quote character"));
+            }
+
+            boolean done = false;
+            StringBuilder st = new StringBuilder();
+            while (!done) {
+                Optional<Character> nextChar = buffer.get();
+                if (nextChar.isPresent()) {
+                    Character next = nextChar.get();
+                    switch (next) {
+                        case '"':
+                            done = true;
+                            break;
+                        default:
+                            st.append(next);
+                    }
+                }
+                else {
+                    done = true;
+                }
+            }
+
+            nextState = State.PROPERTY; // go back to property to finish this ...
+            return Optional.of(new AddKey(st.toString()));
+        }).or(() -> end(buffer));
     }
 
     public Optional<Token> endProperty(CharBuffer buffer) {
+        return Optional.empty();
+    }
+
+    public Optional<Token> array(CharBuffer buffer) {
+        return Optional.empty();
+    }
+
+    public Optional<Token> endArray(CharBuffer buffer) {
+        return Optional.empty();
+    }
+
+    public Optional<Token> item(CharBuffer buffer) {
+        return Optional.empty();
+    }
+
+    public Optional<Token> endItem(CharBuffer buffer) {
         return Optional.empty();
     }
 

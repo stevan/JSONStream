@@ -28,7 +28,6 @@ public class CharBuffer {
         return index >= chars.length;
     }
 
-    public void skip() { skip(1); }
     public void skip(int n) {
         index += n;
     }
