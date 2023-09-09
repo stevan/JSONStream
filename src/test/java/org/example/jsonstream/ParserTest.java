@@ -43,4 +43,19 @@ class ParserTest {
         assertEquals(expected, parser.getRoot().toJSON());
         
     }
+    
+    @Test
+    void consumeTokensFromTokenizerWithArrayRoot() {
+        final String expected = "[100,1.332277,{\"foo\":true,\"bar\":[10,3.14,{},null],\"baz\":false},null,null,null]";
+        
+        CharBuffer buffer = new CharBuffer(expected);
+        Tokenizer tokenizer = new Tokenizer(buffer);
+        Parser parser = new Parser();
+        
+        tokenizer.asStream().forEach((token) -> parser.consumeToken(token));
+        
+        assertTrue(parser.hasRoot());
+        assertEquals(expected, parser.getRoot().toJSON());
+        
+    }
 }

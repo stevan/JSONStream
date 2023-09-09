@@ -17,18 +17,14 @@ public class Parser {
         switch (token.getType()) {
             case START_ARRAY:
                 AST.ArrayNode a = AST.newArray();
-                if ( root == null ) {
-                    root = a;
-                } else {
+                if ( !stack.empty() ) {
                     addValue( token, a );
                 }
                 stack.push(a);
                 break;
             case START_OBJECT:
                 AST.ObjectNode o = AST.newObject();
-                if ( root == null ) {
-                    root = o;
-                } else {
+                if ( !stack.empty() ) {
                     addValue( token, o );
                 }
                 stack.push(o);
@@ -37,7 +33,10 @@ public class Parser {
             case END_ARRAY:
             case END_OBJECT:
                 if ( !stack.empty() ) {
-                    stack.pop();
+                    AST.Node top = stack.pop();
+                    if ( stack.empty() ) {
+                        root = top;
+                    }
                 }
                 break;
 
