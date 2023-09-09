@@ -160,4 +160,21 @@ class TokenizerTest {
         advanceNextTokenAndCheck(t, b, Tokens.EndProperty.class, Tokenizer.State.OBJECT, Tokenizer.State.OBJECT);
         advanceNextTokenAndCheck(t, b, Tokens.EndObject.class, Tokenizer.State.ROOT, Tokenizer.State.ROOT);
     }
+    
+    @Test
+    void produceToken_ObjectTokensWithTwoPropertiesWithDifferentTypes() {
+        CharBuffer b = new CharBuffer("{\"foo\":\"bar\",\"baz\":3.14}");
+        Tokenizer t = new Tokenizer();
+        
+        advanceNextTokenAndCheck(t, b, Tokens.StartObject.class, Tokenizer.State.OBJECT, Tokenizer.State.PROPERTY);
+        advanceNextTokenAndCheck(t, b, Tokens.StartProperty.class, Tokenizer.State.PROPERTY, Tokenizer.State.STRING_LITERAL);
+        advanceNextTokenAndCheckAddString(t, b, Tokenizer.State.PROPERTY, Tokenizer.State.PROPERTY, "foo");
+        advanceNextTokenAndCheckAddString(t, b, Tokenizer.State.PROPERTY, Tokenizer.State.PROPERTY, "bar");
+        advanceNextTokenAndCheck(t, b, Tokens.EndProperty.class, Tokenizer.State.OBJECT, Tokenizer.State.OBJECT);
+        advanceNextTokenAndCheck(t, b, Tokens.StartProperty.class, Tokenizer.State.PROPERTY, Tokenizer.State.STRING_LITERAL);
+        advanceNextTokenAndCheckAddString(t, b, Tokenizer.State.PROPERTY, Tokenizer.State.PROPERTY, "baz");
+        advanceNextTokenAndCheckAddFloat(t, b, Tokenizer.State.PROPERTY, Tokenizer.State.PROPERTY, 3.14F);
+        advanceNextTokenAndCheck(t, b, Tokens.EndProperty.class, Tokenizer.State.OBJECT, Tokenizer.State.OBJECT);
+        advanceNextTokenAndCheck(t, b, Tokens.EndObject.class, Tokenizer.State.ROOT, Tokenizer.State.ROOT);
+    }
 }
