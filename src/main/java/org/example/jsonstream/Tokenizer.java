@@ -1,9 +1,7 @@
 package org.example.jsonstream;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
-import java.util.stream.Stream;
 
 public class Tokenizer {
 
