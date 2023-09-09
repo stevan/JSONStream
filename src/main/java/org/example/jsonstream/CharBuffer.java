@@ -14,9 +14,9 @@ public class CharBuffer {
         source = src;
     }
     
-    public Stream<Character> asStream() {;
+    public Stream<Character> asStream() {
         return Stream.generate(() -> {
-            Character c = source.charAt(index);
+            char c = source.charAt(index);
             //System.out.println("stream called with ("+c+") for ["+index+"]");
             index++;
             return c;
@@ -26,7 +26,7 @@ public class CharBuffer {
     public Stream<Character> streamWhile(Predicate<Character> predicate) {
         return Stream.iterate(
                 source.charAt(index),
-                (c) -> { return predicate.test(source.charAt(index)); },
+                (c) -> predicate.test(source.charAt(index)),
                 (c) -> source.charAt(++index)
         ).limit(source.length() - index);
     }
