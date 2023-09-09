@@ -404,43 +404,6 @@ public class Tokenizer {
     public Tokens.Token error() {
         return new Tokens.ErrorToken("Unknown Error");
     }
-
-
+    
 }
 
-/*
-
-    <state | f()>
-        <char> -> <token>        : <nextState | stack-actions()> : <stack>
-        <char> -> <f() -> token> : <nextState | stack-actions()> : <stack>
-        <char> -> <f() -> token>
-
-0    ROOT | root()
-       '{' -> object()
-
-     OBJECT | object()
-1       '{' -> StartObject : PROPERTY : [ROOT, OBJECT]
-        ',' -> property()
-        '}' -> EndObject : <stack discard(PROPERTY) pop(OBJECT)> : [ROOT]
-
-     PROPERTY | property()
-2       " -> StartProperty : STRING_LITERAL : [ROOT, OBJECT, PROPERTY]
-4        : -> start() : END_PROPERTY : [ROOT, OBJECT, PROPERTY]
-          -> object()
-
-    END_PROPERTY : endProperty()
-        -> EndProperty : <stack discard(PROPERTY)>, OBJECT : [ROOT, OBJECT]
-
-    STRING_LITERAL : stringLiteral()
-3        " -> AddString : <stack peek(*PROPERTY*)> : *[ROOT, OBJECT, PROPERTY]*
-
-    start()
-        '{' -> object()
-        '[' -> array()
-        '"' -> stringLiteral()
-        't' -> trueLiteral()
-        'f' -> falseLiteral()
-        'n' -> nullLiteral()
-        '-'|\d -> numericLiteral()
-
- */
