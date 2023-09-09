@@ -17,6 +17,7 @@ public class Tokenizer {
         ITEM,
         END_ITEM,
         
+        KEY_LITERAL,
         STRING_LITERAL,
         NUMERIC_LITERAL,
         FALSE_LITERAL,
@@ -70,6 +71,9 @@ public class Tokenizer {
                 token = endItem();
                 break;
             // Literals
+            case KEY_LITERAL:
+                token = keyLiteral();
+                break;
             case STRING_LITERAL:
                 token = stringLiteral();
                 break;
@@ -191,7 +195,7 @@ public class Tokenizer {
             switch (c) {
                 case '"':
                     state.push(State.PROPERTY);
-                    nextState = State.STRING_LITERAL;
+                    nextState = State.KEY_LITERAL;
                     return new Tokens.StartProperty();
                 case ':':
                     // XXX - check to be sure we are still in property state here
@@ -289,6 +293,24 @@ public class Tokenizer {
         return new Tokens.EndItem();
     }
     
+    public Tokens.Token keyLiteral() {
+        Optional<Character> character = buffer.getNext(); // grab the quote character
+        
+        return character.map((c) -> {
+            if (c != '"') {
+                return new Tokens.ErrorToken("String must begin with a double-quote character");
+            }
+            
+            String str = buffer.asStream()
+                             .takeWhile((n) -> n != '"')
+                             .map(String::valueOf)
+                             .reduce("", (a, n) -> a + n );
+            
+            nextState = State.PROPERTY; // return to caller state
+            return new Tokens.AddKey(str);
+        }).orElse(end());
+    }
+    
     public Tokens.Token stringLiteral() {
         Optional<Character> character = buffer.getNext(); // grab the quote character
         
@@ -297,16 +319,12 @@ public class Tokenizer {
                 return new Tokens.ErrorToken("String must begin with a double-quote character");
             }
             
-            //System.out.println("Start String Stream");
             String str = buffer.asStream()
                              .takeWhile((n) -> n != '"')
                              .map(String::valueOf)
                              .reduce("", (a, n) -> a + n );
             
-            //System.out.println("STRSTR: " + str);
-            //System.out.println("BUFFER: " + buffer.toString());
-            
-            nextState = state.peek(); // go back to property to finish this ...
+            nextState = state.peek(); // return to caller state
             return new Tokens.AddString(str);
         }).orElse(end());
     }
@@ -319,14 +337,11 @@ public class Tokenizer {
                 return new Tokens.ErrorToken("Number must start with a sign or digit");
             }
             
-            //System.out.println("Start Numeric Stream");
             String num = buffer.streamWhile((n) -> n == '.' || Character.isDigit(n))
                              .map(String::valueOf)
                              .reduce(String.valueOf(c), (a, n) -> a + n );
             
-            //System.out.println("NUMSTR: " + num);
-            //System.out.println("BUFFER: " + buffer.toString());
-            nextState = state.peek(); // go back to property to finish this ...
+            nextState = state.peek(); // go back and finish this ...
             if ( num.contains(".") ) {
                 return new Tokens.AddFloat(Float.parseFloat(num));
             }
@@ -359,7 +374,7 @@ public class Tokenizer {
             }
             
             if (matchLiteral("alse")) {
-                nextState = state.peek(); // go back to property to finish this ...
+                nextState = state.peek(); // return to caller state
                 return new Tokens.AddFalse();
             } else {
                 return new Tokens.ErrorToken("Bad `false` token");
@@ -376,7 +391,7 @@ public class Tokenizer {
             }
             
             if (matchLiteral("rue")) {
-                nextState = state.peek(); // go back to property to finish this ...
+                nextState = state.peek(); // return to caller state
                 return new Tokens.AddTrue();
             } else {
                 return new Tokens.ErrorToken("Bad `true` token");
@@ -393,7 +408,7 @@ public class Tokenizer {
             }
             
             if (matchLiteral("ull")) {
-                nextState = state.peek(); // go back to property to finish this ...
+                nextState = state.peek(); // return to caller state
                 return new Tokens.AddNull();
             } else {
                 return new Tokens.ErrorToken("Bad `null` token");
