@@ -2,6 +2,7 @@ package org.example.jsonstream;
 
 import java.util.Optional;
 import java.util.Stack;
+import java.util.stream.Stream;
 
 public class Tokenizer {
 
@@ -35,6 +36,14 @@ public class Tokenizer {
         nextState = State.ROOT;
         state.push(nextState);
         buffer = buff;
+    }
+    
+    public Stream<Tokens.Token> asStream() {
+        return Stream.iterate(
+            produceToken(),
+            (t) -> !t.isTerminal(),
+            (t) -> produceToken()
+        );
     }
 
     public Tokens.Token produceToken() {
@@ -92,11 +101,11 @@ public class Tokenizer {
             // Errors
             case ERROR:
                 // XXX - this should do something better than this
-                token = error();
+                token = error("Unknown Error");
                 break;
             // in theory this can never happen, but javac complains, so *shrug*
             default:
-                token = new Tokens.ErrorToken("Did not recognise state ("+currState+")");
+                token = error("Did not recognise state ("+currState+")");
         }
         
         return token;
@@ -113,9 +122,9 @@ public class Tokenizer {
                     return array();
                 default:
                     // XXX - this should set nextState to ERROR perhaps?
-                    return new Tokens.ErrorToken("The root node must be either an Object({}) or an Array([])");
+                    return error("The root node must be either an Object({}) or an Array([])");
             }
-        }).orElse(end());
+        }).orElseGet(() -> end());
     }
 
     public Tokens.Token start() {
@@ -141,16 +150,16 @@ public class Tokenizer {
                     if (Character.isDigit(c)) {
                         return numericLiteral();
                     }
-                    return new Tokens.ErrorToken("Unrecognized start character ("+c+")");
+                    return error("Unrecognized start character ("+c+")");
             }
-        }).orElse(end());
+        }).orElseGet(() -> error("start() expected more characters"));
     }
 
     public Tokens.Token end() {
-        // XXX - this should set nextState to END perhaps?
         // XXX - this should make sure there is not en error
         //       meaning that the `state` stack is empty
         //       and the buffer is done.
+        nextState = State.END;
         return new Tokens.NoToken();
     }
 
@@ -183,9 +192,9 @@ public class Tokenizer {
                     nextState = state.peek(); // restore the previous one
                     return new Tokens.EndObject();
                 default:
-                    return new Tokens.ErrorToken("Expected end of object or start of property, but found ("+c+")");
+                    return error("Expected end of object or start of property, but found ("+c+")");
             }
-        }).orElse(end());
+        }).orElseGet(() -> error("object() expected more characters"));
     }
 
     public Tokens.Token property() {
@@ -209,7 +218,7 @@ public class Tokenizer {
                 default:
                     return object();
             }
-        }).orElse(end());
+        }).orElseGet(() -> error("property() expected more characters"));
     }
 
     public Tokens.Token endProperty() {
@@ -250,9 +259,9 @@ public class Tokenizer {
                     nextState = state.peek(); // restore the previous one
                     return new Tokens.EndArray();
                 default:
-                    return new Tokens.ErrorToken("Expected end of array or start of an item, but found ("+c+")");
+                    return error("Expected end of array or start of an item, but found ("+c+")");
             }
-        }).orElse(end());
+        }).orElseGet(() -> error("array() expected more characters"));
     }
 
     public Tokens.Token item() {
@@ -282,7 +291,7 @@ public class Tokenizer {
             state.push(State.END_ITEM);
             nextState = State.ITEM;
             return new Tokens.StartItem();
-        }).orElse(end());
+        }).orElseGet(() -> error("item() expected more characters"));
     }
 
     public Tokens.Token endItem() {
@@ -298,7 +307,7 @@ public class Tokenizer {
         
         return character.map((c) -> {
             if (c != '"') {
-                return new Tokens.ErrorToken("String must begin with a double-quote character");
+                return error("String must begin with a double-quote character");
             }
             
             String str = buffer.asStream()
@@ -308,7 +317,7 @@ public class Tokenizer {
             
             nextState = State.PROPERTY; // return to caller state
             return new Tokens.AddKey(str);
-        }).orElse(end());
+        }).orElseGet(() -> error("keyLiteral() expected more characters"));
     }
     
     public Tokens.Token stringLiteral() {
@@ -316,7 +325,7 @@ public class Tokenizer {
         
         return character.map((c) -> {
             if (c != '"') {
-                return new Tokens.ErrorToken("String must begin with a double-quote character");
+                return error("String must begin with a double-quote character");
             }
             
             String str = buffer.asStream()
@@ -326,7 +335,7 @@ public class Tokenizer {
             
             nextState = state.peek(); // return to caller state
             return new Tokens.AddString(str);
-        }).orElse(end());
+        }).orElseGet(() -> error("stringLiteral() expected more characters"));
     }
 
     public Tokens.Token numericLiteral() {
@@ -334,7 +343,7 @@ public class Tokenizer {
 
         return character.map((c) -> {
             if (c != '-' && !Character.isDigit(c)) {
-                return new Tokens.ErrorToken("Number must start with a sign or digit");
+                return error("Number must start with a sign or digit");
             }
             
             String num = buffer.streamWhile((n) -> n == '.' || Character.isDigit(n))
@@ -348,7 +357,7 @@ public class Tokenizer {
             else {
                 return new Tokens.AddInt(Integer.parseInt(num));
             }
-        }).orElse(end());
+        }).orElseGet(() -> error("numericLiteral() expected more characters"));
     }
     
     private boolean matchLiteral(String expected) {
@@ -370,16 +379,16 @@ public class Tokenizer {
         
         return character.map((c) -> {
             if (c != 'f') {
-                return new Tokens.ErrorToken("False literal must start with `f`");
+                return error("False literal must start with `f`");
             }
             
             if (matchLiteral("alse")) {
                 nextState = state.peek(); // return to caller state
                 return new Tokens.AddFalse();
             } else {
-                return new Tokens.ErrorToken("Bad `false` token");
+                return error("Bad `false` token");
             }
-        }).orElse(end());
+        }).orElseGet(() -> error("falseLiteral() expected more characters"));
     }
 
     public Tokens.Token trueLiteral() {
@@ -387,16 +396,16 @@ public class Tokenizer {
         
         return character.map((c) -> {
             if (c != 't') {
-                return new Tokens.ErrorToken("False literal must start with `f`");
+                return error("False literal must start with `f`");
             }
             
             if (matchLiteral("rue")) {
                 nextState = state.peek(); // return to caller state
                 return new Tokens.AddTrue();
             } else {
-                return new Tokens.ErrorToken("Bad `true` token");
+                return error("Bad `true` token");
             }
-        }).orElse(end());
+        }).orElseGet(() -> error("trueLiteral() expected more characters"));
     }
 
     public Tokens.Token nullLiteral() {
@@ -404,20 +413,21 @@ public class Tokenizer {
         
         return character.map((c) -> {
             if (c != 'n') {
-                return new Tokens.ErrorToken("False literal must start with `f`");
+                return error("False literal must start with `f`");
             }
             
             if (matchLiteral("ull")) {
                 nextState = state.peek(); // return to caller state
                 return new Tokens.AddNull();
             } else {
-                return new Tokens.ErrorToken("Bad `null` token");
+                return error("Bad `null` token");
             }
-        }).orElse(end());
+        }).orElseGet(() -> error("nullLiteral() expected more characters"));
     }
 
-    public Tokens.Token error() {
-        return new Tokens.ErrorToken("Unknown Error");
+    public Tokens.Token error(String msg) {
+        nextState = State.ERROR;
+        return new Tokens.ErrorToken(msg);
     }
     
 }

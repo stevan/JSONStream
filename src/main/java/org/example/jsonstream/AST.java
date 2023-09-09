@@ -74,7 +74,9 @@ public class AST {
     
     public static class StringNode implements Node {
         String value;
+        
         StringNode(String v) { value = v; }
+        
         public String toJSON() {
             return "\"" + value + "\"";
         }
@@ -82,7 +84,9 @@ public class AST {
     
     public static class IntNode implements Node {
         Integer value;
+        
         IntNode(Integer v) { value = v; }
+        
         public String toJSON() {
             return value.toString();
         }
@@ -90,7 +94,9 @@ public class AST {
     
     public static class FloatNode implements Node {
         Float value;
+        
         FloatNode(Float v) { value = v; }
+        
         public String toJSON() {
             return value.toString();
         }

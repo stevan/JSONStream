@@ -1,23 +1,34 @@
 package org.example.jsonstream;
 
+import java.util.Optional;
 import java.util.Stack;
 
 public class Parser {
 
+    AST.Node root;
     Stack<AST.Node> stack = new Stack<>();
-
+    
+    public boolean hasRoot() { return root != null; }
+    public AST.Node getRoot() {
+        return root;
+    }
+    
     public void consumeToken(Tokens.Token token) {
         switch (token.getType()) {
             case START_ARRAY:
                 AST.ArrayNode a = AST.newArray();
-                if ( !stack.empty() ) {
+                if ( root == null ) {
+                    root = a;
+                } else {
                     addValue( token, a );
                 }
                 stack.push(a);
                 break;
             case START_OBJECT:
                 AST.ObjectNode o = AST.newObject();
-                if ( !stack.empty() ) {
+                if ( root == null ) {
+                    root = o;
+                } else {
                     addValue( token, o );
                 }
                 stack.push(o);
