@@ -30,9 +30,9 @@ class ASTTest {
                             .addItem(AST.newItem(AST.newFalse()))
                             .addItem(AST.newItem(AST.newFloat(3.14F)))
                             .addItem(AST.newItem(AST.newArray()))
-                            .addItem(AST.newItem(AST.newString("goorch")))));
+                            .addItem(AST.newItem(AST.newString("gorch")))));
         
-        assertEquals("{\"foo\":true,\"bar\":[null,10,{}],\"baz\":[false,3.14,[],\"goorch\"]}", o.toJSON());
+        assertEquals("{\"foo\":true,\"bar\":[null,10,{}],\"baz\":[false,3.14,[],\"gorch\"]}", o.toJSON());
     }
     
 }

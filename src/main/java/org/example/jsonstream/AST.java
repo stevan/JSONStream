@@ -20,7 +20,7 @@ public class AST {
         public String toJSON() {
             return "{"
                     + properties.stream()
-                          .map((n) -> n.toJSON())
+                          .map(PropertyNode::toJSON)
                           .collect(Collectors.joining(","))
                     + "}";
         }
@@ -37,7 +37,7 @@ public class AST {
         public String toJSON() {
             return "["
                     + items.stream()
-                          .map((n) -> n.toJSON())
+                          .map(ItemNode::toJSON)
                           .collect(Collectors.joining(","))
                     + "]";
         }

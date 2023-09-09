@@ -124,7 +124,7 @@ public class Tokenizer {
                     // XXX - this should set nextState to ERROR perhaps?
                     return error("The root node must be either an Object({}) or an Array([])");
             }
-        }).orElseGet(() -> end());
+        }).orElseGet(this::end);
     }
 
     public Tokens.Token start() {
