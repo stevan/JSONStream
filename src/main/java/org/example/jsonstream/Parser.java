@@ -1,6 +1,5 @@
 package org.example.jsonstream;
 
-import java.util.Optional;
 import java.util.Stack;
 
 public class Parser {
@@ -18,14 +17,14 @@ public class Parser {
             case START_ARRAY:
                 AST.ArrayNode a = AST.newArray();
                 if ( !stack.empty() ) {
-                    addValue( token, a );
+                    addValue(a );
                 }
                 stack.push(a);
                 break;
             case START_OBJECT:
                 AST.ObjectNode o = AST.newObject();
                 if ( !stack.empty() ) {
-                    addValue( token, o );
+                    addValue(o );
                 }
                 stack.push(o);
                 break;
@@ -52,27 +51,27 @@ public class Parser {
                 break;
 
             case ADD_TRUE:
-                addValue( token, AST.newTrue() );
+                addValue(AST.newTrue() );
                 break;
             case ADD_FALSE:
-                addValue( token, AST.newFalse() );
+                addValue(AST.newFalse() );
                 break;
             case ADD_NULL:
-                addValue( token, AST.newNull() );
+                addValue(AST.newNull() );
                 break;
             case ADD_STRING:
-                addValue( token, AST.newString( ((Tokens.AddString) token).getValue() ) );
+                addValue(AST.newString( ((Tokens.AddString) token).getValue() ) );
                 break;
             case ADD_INT:
-                addValue( token, AST.newInt( ((Tokens.AddInt) token).getValue() ) );
+                addValue(AST.newInt( ((Tokens.AddInt) token).getValue() ) );
                 break;
             case ADD_FLOAT:
-                addValue( token, AST.newFloat( ((Tokens.AddFloat) token).getValue() ) );
+                addValue(AST.newFloat( ((Tokens.AddFloat) token).getValue() ) );
                 break;
         }
     }
 
-    private void addValue (Tokens.Token token, AST.Node node) {
+    private void addValue (AST.Node node) {
         if ( stack.peek() instanceof AST.ArrayNode ) {
             AST.ArrayNode curr = (AST.ArrayNode) stack.peek();
             curr.addItem( AST.newItem( node ) );
