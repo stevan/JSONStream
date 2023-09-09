@@ -1,26 +1,30 @@
 package org.example.jsonstream;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
+import java.util.stream.Stream;
 
 public class Tokenizer {
 
     enum State {
         ROOT,
-        START,
         END,
+        
         OBJECT,
         PROPERTY,
         END_PROPERTY,
+        
         ARRAY,
-        END_ARRAY,
         ITEM,
         END_ITEM,
+        
         STRING_LITERAL,
         NUMERIC_LITERAL,
         FALSE_LITERAL,
         TRUE_LITERAL,
         NULL_LITERAL,
+        
         ERROR
     }
 
@@ -42,31 +46,22 @@ public class Tokenizer {
             case ROOT:
                 token = root(buffer);
                 break;
-            case START:
-                token = start(buffer);
-                break;
-
             case END:
                 token = end(buffer);
                 break;
-
+            // Objects
             case OBJECT:
                 token = object(buffer);
                 break;
-
             case PROPERTY:
                 token = property(buffer);
                 break;
-                
             case END_PROPERTY:
                 token = endProperty(buffer);
                 break;
-
+            // Arrays
             case ARRAY:
                 token = array(buffer);
-                break;
-            case END_ARRAY:
-                token = endArray(buffer);
                 break;
             case ITEM:
                 token = item(buffer);
@@ -74,6 +69,7 @@ public class Tokenizer {
             case END_ITEM:
                 token = endItem(buffer);
                 break;
+            // Literals
             case STRING_LITERAL:
                 token = stringLiteral(buffer);
                 break;
@@ -89,11 +85,13 @@ public class Tokenizer {
             case NULL_LITERAL:
                 token = nullLiteral(buffer);
                 break;
+            // Errors
             case ERROR:
                 // XXX - this should do something better than this
                 token = error(buffer);
+                break;
+            // in theory this can never happen, but javac complains, so *shrug*
             default:
-                // XXX - This should return an ErrorToken
                 token = new Tokens.ErrorToken("Did not recognise state ("+currState+")");
         }
         
@@ -219,18 +217,75 @@ public class Tokenizer {
     }
 
     public Tokens.Token array(CharBuffer buffer) {
-        return new Tokens.StartArray();
-    }
-
-    public Tokens.Token endArray(CharBuffer buffer) {
-        return new Tokens.EndArray();
+        Optional<Character> character = buffer.skipWhitespaceAndPeek();
+        
+        return character.map((c) -> {
+            //System.out.println("-- Entering StartArray -------------------------------------");
+            switch (c) {
+                case '[':
+                    buffer.skip(1);
+                    state.push(State.ARRAY);
+                    nextState = State.ITEM;
+                    return new Tokens.StartArray();
+                case ',':
+                    if (state.peek() == State.ITEM) {
+                        //System.out.println("array() -> END ITEM -> " + state.peek());
+                        return endItem(buffer);
+                    }
+                    buffer.skip(1);
+                    return item(buffer);
+                case ']':
+                    // XXX - check if the state is not empty
+                    if (state.peek() == State.ITEM) {
+                        //System.out.println("END ITEM -> " + state.peek());
+                        return endItem(buffer);
+                    }
+                    buffer.skip(1);
+                    // XXX - check if the state is not empty here ...
+                    state.pop();
+                    nextState = state.peek(); // restore the previous one
+                    return new Tokens.EndArray();
+                default:
+                    return new Tokens.ErrorToken("Expected end of array or start of an item, but found ("+c+")");
+            }
+        }).orElse(end(buffer));
     }
 
     public Tokens.Token item(CharBuffer buffer) {
-        return new Tokens.StartItem();
+        Optional<Character> character = buffer.skipWhitespaceAndPeek();
+        
+        return character.map((c) -> {
+            if ( c == ']' ) {
+                return array(buffer);
+            }
+            
+            // if we are in item context
+            //System.out.println("-- Entering StartItem -------------------------------------");
+            if (state.peek() == State.END_ITEM) {
+                Tokens.Token value = start(buffer); // grab whatever value we find
+                // XXX - check if the Token is an ErrorToken, in which case just return it
+                //       although perhaps we want to set an ERROR state too?? hmmm
+                // XXX - check to be sure we are back in the same item state again
+                //System.out.println("(before) IN ITEM: nextState " + (nextState == null ? "NULL" : nextState));
+                if (nextState == null) nextState = State.END_ITEM;
+                //System.out.println("IN ITEM: nextState " + nextState);
+                //System.out.println("IN ITEM: token " + value);
+                return value;
+            }
+            
+            // otherwise, start the item and "recurse"
+            //System.out.println("StartItem and RECURSE");
+            state.push(State.END_ITEM);
+            nextState = State.ITEM;
+            return new Tokens.StartItem();
+        }).orElse(end(buffer));
     }
 
     public Tokens.Token endItem(CharBuffer buffer) {
+        // XXX - check if the state is not empty and peek() == ITEM
+        //System.out.println("endItem() -> " + state.peek());
+        state.pop(); // exit the property context
+        nextState = State.ARRAY;
         return new Tokens.EndItem();
     }
     
@@ -280,17 +335,70 @@ public class Tokenizer {
             }
         }).orElse(end(buffer));
     }
+    
+    private boolean matchLiteral(CharBuffer buffer, String expected) {
+        StringBuilder acc = new StringBuilder();
+        
+        expected.chars().mapToObj((c) -> (char) c).forEach((c) -> {
+            Optional<Character> peek = buffer.peek().filter((n) -> n == c);
+            if ( peek.isPresent() ) {
+                acc.append( peek.get() );
+                buffer.skip(1);
+            }
+        });
+
+        return acc.toString().equals(expected);
+    }
 
     public Tokens.Token falseLiteral(CharBuffer buffer) {
-        return new Tokens.AddFalse();
+        Optional<Character> character = buffer.getNext();
+        
+        return character.map((c) -> {
+            if (c != 'f') {
+                return new Tokens.ErrorToken("False literal must start with `f`");
+            }
+            
+            if (matchLiteral(buffer, "alse")) {
+                nextState = state.peek(); // go back to property to finish this ...
+                return new Tokens.AddFalse();
+            } else {
+                return new Tokens.ErrorToken("Bad `false` token");
+            }
+        }).orElse(end(buffer));
     }
 
     public Tokens.Token trueLiteral(CharBuffer buffer) {
-        return new Tokens.AddTrue();
+        Optional<Character> character = buffer.getNext();
+        
+        return character.map((c) -> {
+            if (c != 't') {
+                return new Tokens.ErrorToken("False literal must start with `f`");
+            }
+            
+            if (matchLiteral(buffer, "rue")) {
+                nextState = state.peek(); // go back to property to finish this ...
+                return new Tokens.AddTrue();
+            } else {
+                return new Tokens.ErrorToken("Bad `true` token");
+            }
+        }).orElse(end(buffer));
     }
 
     public Tokens.Token nullLiteral(CharBuffer buffer) {
-        return new Tokens.AddNull();
+        Optional<Character> character = buffer.getNext();
+        
+        return character.map((c) -> {
+            if (c != 'n') {
+                return new Tokens.ErrorToken("False literal must start with `f`");
+            }
+            
+            if (matchLiteral(buffer, "ull")) {
+                nextState = state.peek(); // go back to property to finish this ...
+                return new Tokens.AddNull();
+            } else {
+                return new Tokens.ErrorToken("Bad `null` token");
+            }
+        }).orElse(end(buffer));
     }
 
     public Tokens.Token error(CharBuffer buffer) {
