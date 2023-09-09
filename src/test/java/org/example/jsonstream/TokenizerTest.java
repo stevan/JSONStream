@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TokenizerTest {
 
     private void advanceNextTokenAndCheck(Tokenizer tokenizer, CharBuffer buffer, Class<? extends Tokens.Token> tokenClass, Tokenizer.State peek, Tokenizer.State nextState) {
-        Tokens.Token token = tokenizer.produceToken(buffer);
+        Tokens.Token token = tokenizer.produceToken();
         //System.out.println(buffer.toString() + " = " + token.toString() + " -> " + tokenizer.state.toString() + " : " + tokenizer.nextState);
         assertInstanceOf(tokenClass, token);
 
@@ -16,7 +16,7 @@ class TokenizerTest {
     }
 
     private void advanceNextTokenAndCheckAddString(Tokenizer tokenizer, CharBuffer buffer, Tokenizer.State peek, Tokenizer.State nextState, String expected_str) {
-        Tokens.Token token = tokenizer.produceToken(buffer);
+        Tokens.Token token = tokenizer.produceToken();
         //System.out.println(token.toString() + " -> " + tokenizer.state.toString() + " : " + tokenizer.nextState);
         assertInstanceOf(Tokens.AddString.class, token);
 
@@ -28,7 +28,7 @@ class TokenizerTest {
     }
     
     private void advanceNextTokenAndCheckAddInt(Tokenizer tokenizer, CharBuffer buffer, Tokenizer.State peek, Tokenizer.State nextState, Integer expected_int) {
-        Tokens.Token token = tokenizer.produceToken(buffer);
+        Tokens.Token token = tokenizer.produceToken();
         //System.out.println(token.toString() + " -> " + tokenizer.state.toString() + " : " + tokenizer.nextState);
         assertInstanceOf(Tokens.AddInt.class, token);
         
@@ -40,7 +40,7 @@ class TokenizerTest {
     }
     
     private void advanceNextTokenAndCheckAddFloat(Tokenizer tokenizer, CharBuffer buffer, Tokenizer.State peek, Tokenizer.State nextState, Float expected_float) {
-        Tokens.Token token = tokenizer.produceToken(buffer);
+        Tokens.Token token = tokenizer.produceToken();
         //System.out.println(token.toString() + " -> " + tokenizer.state.toString() + " : " + tokenizer.nextState);
         assertInstanceOf(Tokens.AddFloat.class, token);
         
@@ -54,9 +54,9 @@ class TokenizerTest {
     @Test
     void produceToken_ErrorToken() {
         CharBuffer b = new CharBuffer("1");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
 
-        Tokens.Token token = t.produceToken(b);
+        Tokens.Token token = t.produceToken();
         assertInstanceOf(Tokens.ErrorToken.class, token);
         Tokens.ErrorToken err = (Tokens.ErrorToken) token;
         assertEquals(err.getMsg(), "The root node must be either an Object({}) or an Array([])");
@@ -68,9 +68,9 @@ class TokenizerTest {
     @Test
     void produceToken_NoToken() {
         CharBuffer b = new CharBuffer("");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
 
-        Tokens.Token token = t.produceToken(b);
+        Tokens.Token token = t.produceToken();
         assertInstanceOf(Tokens.NoToken.class, token);
 
         assertEquals(t.state.peek(), Tokenizer.State.ROOT);
@@ -79,7 +79,7 @@ class TokenizerTest {
     @Test
     void produceToken_StartArrayToken() {
         CharBuffer b = new CharBuffer("[");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
         
         advanceNextTokenAndCheck(t, b, Tokens.StartArray.class, Tokenizer.State.ARRAY, Tokenizer.State.ITEM);
     }
@@ -88,7 +88,7 @@ class TokenizerTest {
     @Test
     void produceToken_StartAndEndOArrayToken() {
         CharBuffer b = new CharBuffer("[]");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
         
         advanceNextTokenAndCheck(t, b, Tokens.StartArray.class, Tokenizer.State.ARRAY, Tokenizer.State.ITEM);
         advanceNextTokenAndCheck(t, b, Tokens.EndArray.class, Tokenizer.State.ROOT, Tokenizer.State.ROOT);
@@ -97,7 +97,7 @@ class TokenizerTest {
     @Test
     void produceToken_ArrayOrArrayToken() {
         CharBuffer b = new CharBuffer("[[]]");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
         
         advanceNextTokenAndCheck(t, b, Tokens.StartArray.class, Tokenizer.State.ARRAY, Tokenizer.State.ITEM);
             advanceNextTokenAndCheck(t, b, Tokens.StartItem.class, Tokenizer.State.END_ITEM, Tokenizer.State.ITEM);
@@ -110,7 +110,7 @@ class TokenizerTest {
     @Test
     void produceToken_ArrayTokenWithInt() {
         CharBuffer b = new CharBuffer("[10]");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
         
         advanceNextTokenAndCheck(t, b, Tokens.StartArray.class, Tokenizer.State.ARRAY, Tokenizer.State.ITEM);
             advanceNextTokenAndCheck(t, b, Tokens.StartItem.class, Tokenizer.State.END_ITEM, Tokenizer.State.ITEM);
@@ -122,7 +122,7 @@ class TokenizerTest {
     @Test
     void produceToken_ArrayTokenWithLiterals() {
         CharBuffer b = new CharBuffer("[10, 3.14, \"foo\"]");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
         
         advanceNextTokenAndCheck(t, b, Tokens.StartArray.class, Tokenizer.State.ARRAY, Tokenizer.State.ITEM);
             advanceNextTokenAndCheck(t, b, Tokens.StartItem.class, Tokenizer.State.END_ITEM, Tokenizer.State.ITEM);
@@ -140,7 +140,7 @@ class TokenizerTest {
     @Test
     void produceToken_ArrayTokenWithArraysLiterals() {
         CharBuffer b = new CharBuffer("[10, [3.14]]");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
         
         advanceNextTokenAndCheck(t, b, Tokens.StartArray.class, Tokenizer.State.ARRAY, Tokenizer.State.ITEM);
             advanceNextTokenAndCheck(t, b, Tokens.StartItem.class, Tokenizer.State.END_ITEM, Tokenizer.State.ITEM);
@@ -159,7 +159,7 @@ class TokenizerTest {
     @Test
     void produceToken_StartObjectToken() {
         CharBuffer b = new CharBuffer("{");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
 
         advanceNextTokenAndCheck(t, b, Tokens.StartObject.class, Tokenizer.State.OBJECT, Tokenizer.State.PROPERTY);
     }
@@ -168,7 +168,7 @@ class TokenizerTest {
     @Test
     void produceToken_StartAndEndObjectToken() {
         CharBuffer b = new CharBuffer("{}");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
 
         advanceNextTokenAndCheck(t, b, Tokens.StartObject.class, Tokenizer.State.OBJECT, Tokenizer.State.PROPERTY);
         advanceNextTokenAndCheck(t, b, Tokens.EndObject.class, Tokenizer.State.ROOT, Tokenizer.State.ROOT);
@@ -177,7 +177,7 @@ class TokenizerTest {
     @Test
     void produceToken_StartAndEndObjectTokenWithKey() {
         CharBuffer b = new CharBuffer("{\"foo\"");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
 
         advanceNextTokenAndCheck(t, b, Tokens.StartObject.class, Tokenizer.State.OBJECT, Tokenizer.State.PROPERTY);
             advanceNextTokenAndCheck(t, b, Tokens.StartProperty.class, Tokenizer.State.PROPERTY, Tokenizer.State.STRING_LITERAL);
@@ -187,7 +187,7 @@ class TokenizerTest {
     @Test
     void produceToken_ObjectTokensWithSingleProperty() {
         CharBuffer b = new CharBuffer("{\"foo\":\"bar\"}");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
 
         advanceNextTokenAndCheck(t, b, Tokens.StartObject.class, Tokenizer.State.OBJECT, Tokenizer.State.PROPERTY);
             advanceNextTokenAndCheck(t, b, Tokens.StartProperty.class, Tokenizer.State.PROPERTY, Tokenizer.State.STRING_LITERAL);
@@ -200,7 +200,7 @@ class TokenizerTest {
     @Test
     void produceToken_ObjectTokensWithSingleNumericProperty() {
         CharBuffer b = new CharBuffer("{\"foo\":10}");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
         
         advanceNextTokenAndCheck(t, b, Tokens.StartObject.class, Tokenizer.State.OBJECT, Tokenizer.State.PROPERTY);
             advanceNextTokenAndCheck(t, b, Tokens.StartProperty.class, Tokenizer.State.PROPERTY, Tokenizer.State.STRING_LITERAL);
@@ -213,7 +213,7 @@ class TokenizerTest {
     @Test
     void produceToken_ObjectTokensWithSingleFalseProperty() {
         CharBuffer b = new CharBuffer("{\"foo\":false}");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
         
         advanceNextTokenAndCheck(t, b, Tokens.StartObject.class, Tokenizer.State.OBJECT, Tokenizer.State.PROPERTY);
             advanceNextTokenAndCheck(t, b, Tokens.StartProperty.class, Tokenizer.State.PROPERTY, Tokenizer.State.STRING_LITERAL);
@@ -226,7 +226,7 @@ class TokenizerTest {
     @Test
     void produceToken_ObjectTokensWithSingleTrueProperty() {
         CharBuffer b = new CharBuffer("{\"foo\":true}");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
         
         advanceNextTokenAndCheck(t, b, Tokens.StartObject.class, Tokenizer.State.OBJECT, Tokenizer.State.PROPERTY);
             advanceNextTokenAndCheck(t, b, Tokens.StartProperty.class, Tokenizer.State.PROPERTY, Tokenizer.State.STRING_LITERAL);
@@ -239,7 +239,7 @@ class TokenizerTest {
     @Test
     void produceToken_ObjectTokensWithSingleNullProperty() {
         CharBuffer b = new CharBuffer("{\"foo\":null}");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
         
         advanceNextTokenAndCheck(t, b, Tokens.StartObject.class, Tokenizer.State.OBJECT, Tokenizer.State.PROPERTY);
             advanceNextTokenAndCheck(t, b, Tokens.StartProperty.class, Tokenizer.State.PROPERTY, Tokenizer.State.STRING_LITERAL);
@@ -252,7 +252,7 @@ class TokenizerTest {
     @Test
     void produceToken_ObjectTokensWithSinglePropertyAndComplexValue() {
         CharBuffer b = new CharBuffer("{\"foo\":{}}");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
 
         advanceNextTokenAndCheck(t, b, Tokens.StartObject.class, Tokenizer.State.OBJECT, Tokenizer.State.PROPERTY);
             advanceNextTokenAndCheck(t, b, Tokens.StartProperty.class, Tokenizer.State.PROPERTY, Tokenizer.State.STRING_LITERAL);
@@ -266,7 +266,7 @@ class TokenizerTest {
     @Test
     void produceToken_ObjectTokensWithTwoProperties() {
         CharBuffer b = new CharBuffer("{\"foo\":\"bar\",\"baz\":\"gorch\"}");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
         
         advanceNextTokenAndCheck(t, b, Tokens.StartObject.class, Tokenizer.State.OBJECT, Tokenizer.State.PROPERTY);
             advanceNextTokenAndCheck(t, b, Tokens.StartProperty.class, Tokenizer.State.PROPERTY, Tokenizer.State.STRING_LITERAL);
@@ -283,7 +283,7 @@ class TokenizerTest {
     @Test
     void produceToken_ObjectTokensWithTwoPropertiesWithDifferentTypes() {
         CharBuffer b = new CharBuffer("{\"foo\":\"bar\",\"baz\":3.14}");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
         
         advanceNextTokenAndCheck(t, b, Tokens.StartObject.class, Tokenizer.State.OBJECT, Tokenizer.State.PROPERTY);
             advanceNextTokenAndCheck(t, b, Tokens.StartProperty.class, Tokenizer.State.PROPERTY, Tokenizer.State.STRING_LITERAL);
@@ -300,7 +300,7 @@ class TokenizerTest {
     @Test
     void produceToken_AllTheThings() {
         CharBuffer b = new CharBuffer("[10, [3.14, {}, true],{\"foo\":true}, null, [false]]");
-        Tokenizer t = new Tokenizer();
+        Tokenizer t = new Tokenizer(b);
         
         advanceNextTokenAndCheck(t, b, Tokens.StartArray.class, Tokenizer.State.ARRAY, Tokenizer.State.ITEM);
             advanceNextTokenAndCheck(t, b, Tokens.StartItem.class, Tokenizer.State.END_ITEM, Tokenizer.State.ITEM);
