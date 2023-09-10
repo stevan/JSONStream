@@ -1,11 +1,9 @@
 package org.example.jsonstream.json;
 
-public class JSONFloat implements JSONValue {
+public class JSONFloat implements JSONValue, JSONScalar, JSONNumeric {
     private final Float value;
     
-    public JSONFloat(Float v) {
-        value = v;
-    }
+    public JSONFloat(Float v) { value = v; }
     
     public Float getFloatValue() { return value; }
     

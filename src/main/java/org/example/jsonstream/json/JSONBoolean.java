@@ -1,6 +1,6 @@
 package org.example.jsonstream.json;
 
-public class JSONBoolean implements JSONValue {
+public class JSONBoolean implements JSONValue, JSONScalar, JSONLiteral {
     private final Boolean value;
     
     public JSONBoolean(Boolean v) {

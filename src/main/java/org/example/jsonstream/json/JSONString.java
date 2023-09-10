@@ -1,6 +1,6 @@
 package org.example.jsonstream.json;
 
-public class JSONString implements JSONValue {
+public class JSONString implements JSONValue, JSONScalar {
     private final String value;
     
     public JSONString(String v) { value = v; }

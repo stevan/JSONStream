@@ -1,22 +1,16 @@
 package org.example.jsonstream.json;
 
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.*;
 import java.util.stream.*;
 
-public class JSONArray implements JSONValue, JSONCollection {
-    private final List<JSONValue> items;
+public class JSONArray<T extends JSONValue> implements JSONValue, JSONCollection {
+    private final List<T> items;
     
-    public JSONArray() {
-        items = List.of();
-    }
-    public JSONArray(List<JSONValue> i) {
-        items = i;
-    }
+    public JSONArray() { items = List.of(); }
+    public JSONArray(List<T> i) { items = i; }
     
-    public JSONValue get(Integer i) {
+    public T get(Integer i) {
         return items.get(i);
     }
     
@@ -24,28 +18,24 @@ public class JSONArray implements JSONValue, JSONCollection {
         return items.size();
     }
     
-    public Stream<JSONValue> stream() {
-        return items.stream();
-    }
-    
-    public void forEach(Consumer<JSONValue> f) {
+    public void forEach(Consumer<T> f) {
         items.forEach(f);
     }
     
-    public Stream<? extends Object> map(Function<JSONValue, ? extends Object> f) {
-        return items.stream().map(f);
+    public Stream<T> stream() {
+        return items.stream();
     }
     
-    public Stream<JSONValue> grep(Predicate<JSONValue> f) {
-        return items.stream().filter(f);
+    public <R extends JSONValue> JSONArray<R> map(Function<T,R> f) {
+        return new JSONArray<R>(items.stream().map(f).collect(Collectors.toList()));
     }
     
-    public List<JSONValue> toList() {
+    public JSONArray<T> grep(Predicate<T> f) {
+        return new JSONArray<T>(items.stream().filter(f).collect(Collectors.toList()));
+    }
+    
+    public List<T> toList() {
         return List.copyOf(items);
-    }
-    
-    public JSONValue[] toArray() {
-        return items.toArray(new JSONValue[]{});
     }
     
     public String toJSON() {
