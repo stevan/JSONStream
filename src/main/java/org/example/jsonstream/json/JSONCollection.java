@@ -5,6 +5,6 @@ package org.example.jsonstream.json;
  * as Array and Object.
  */
 
-public interface JSONCollection {
+public interface JSONCollection extends JSONValue {
 
 }

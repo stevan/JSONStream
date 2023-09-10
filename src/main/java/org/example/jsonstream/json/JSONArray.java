@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
 
-public class JSONArray<T extends JSONValue> implements JSONValue, JSONCollection {
+public class JSONArray<T extends JSONValue> implements JSONCollection {
     private final List<T> items;
     
     public JSONArray() { items = List.of(); }

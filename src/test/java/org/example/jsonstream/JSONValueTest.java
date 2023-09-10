@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 import org.example.jsonstream.json.*;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 class JSONValueTest {
     
     @Test
@@ -20,9 +22,11 @@ class JSONValueTest {
             )
         );
         
-        a.map((i) -> new JSONInteger(i.getIntegerValue() + 1))
-            .forEach(System.out::println);
-        
+        assertEquals("[1,2,3,4]", a.toJSON());
+        assertEquals(
+            "[2.5,3.5,4.5,5.5]",
+            a.map((i) -> new JSONFloat(i.getValue() + 1.5F)).toJSON()
+        );
     }
     
     @Test
@@ -45,18 +49,7 @@ class JSONValueTest {
             )
         );
         
-        System.out.println(o.keys().toString());
         
-        System.out.println(o.values().stream().map(JSONValue::toJSON).collect(Collectors.joining(", ")));
-        
-        o.forEach((k, v) -> System.out.println(k + " => " + v.toJSON()));
-        //o.map((k, v) -> "<" + k + " => " + v.toJSON() + ">").forEach(System.out::println);
-        
-        JSONArray<JSONValue> bling = (JSONArray<JSONValue>) o.get("bling");
-        bling.forEach((v) -> System.out.println(v.toJSON()));
-
-        
-        System.out.println(o.toJSON());
         
     }
     
