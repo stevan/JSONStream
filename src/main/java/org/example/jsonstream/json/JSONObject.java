@@ -43,12 +43,8 @@ public class JSONObject<T extends JSONValue> implements JSONValue, JSONCollectio
         );
     }
     
-    public Map<String,JSONValue> asMap() {
+    public Map<String,T> asMap() {
         return Map.copyOf(props);
-    }
-    
-    public static JSONObject copyOf(JSONObject o) {
-        return new JSONObject(o.asMap());
     }
     
     public String toJSON() {
