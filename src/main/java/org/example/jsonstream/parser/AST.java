@@ -32,7 +32,7 @@ public class AST {
         }
         
         public void accept(NodeVisitor v) {
-            properties.forEach((p) -> v.visit(p));
+            properties.forEach(v::visit);
         }
         
         public String toJSON() {
@@ -53,7 +53,7 @@ public class AST {
         }
         
         public void accept(NodeVisitor v) {
-            items.forEach((i) -> v.visit(i));
+            items.forEach(v::visit);
         }
         
         public String toJSON() {
