@@ -5,61 +5,66 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TokenizerTest {
-
+    
+    private static void debugTokenizer(Tokenizer tokenizer, Tokens.Token token) {
+        //System.out.println(tokenizer.buffer.toString() + " = " + token.toString() + " -> " + tokenizer.nextState);
+        //System.out.println("CONTEXT : " + tokenizer.context.toString());
+    }
+    
     private void advanceNextTokenAndCheck(Tokenizer tokenizer, Class<? extends Tokens.Token> tokenClass, Tokenizer.State peek, Tokenizer.State nextState) {
         Tokens.Token token = tokenizer.produceToken();
-        //System.out.println(tokenizer.buffer.toString() + " = " + token.toString() + " -> " + tokenizer.state.toString() + " : " + tokenizer.nextState);
+        debugTokenizer(tokenizer, token);
         assertInstanceOf(tokenClass, token);
 
-        assertEquals(peek, tokenizer.state.peek());
+        assertEquals(peek, tokenizer.stack.peek());
         assertEquals(nextState, tokenizer.nextState);
     }
     
     private void advanceNextTokenAndCheckAddKey(Tokenizer tokenizer, Tokenizer.State peek, Tokenizer.State nextState, String expected_str) {
         Tokens.Token token = tokenizer.produceToken();
-        //System.out.println(token.toString() + " -> " + tokenizer.state.toString() + " : " + tokenizer.nextState);
+        debugTokenizer(tokenizer, token);
         assertInstanceOf(Tokens.AddKey.class, token);
         
         Tokens.AddKey str = (Tokens.AddKey) token;
         assertEquals(expected_str, str.getValue());
         
-        assertEquals(peek, tokenizer.state.peek());
+        assertEquals(peek, tokenizer.stack.peek());
         assertEquals(nextState, tokenizer.nextState);
     }
     
     private void advanceNextTokenAndCheckAddString(Tokenizer tokenizer, Tokenizer.State peek, Tokenizer.State nextState, String expected_str) {
         Tokens.Token token = tokenizer.produceToken();
-        //System.out.println(token.toString() + " -> " + tokenizer.state.toString() + " : " + tokenizer.nextState);
+        debugTokenizer(tokenizer, token);
         assertInstanceOf(Tokens.AddString.class, token);
 
         Tokens.AddString str = (Tokens.AddString) token;
         assertEquals(expected_str, str.getValue());
 
-        assertEquals(peek, tokenizer.state.peek());
+        assertEquals(peek, tokenizer.stack.peek());
         assertEquals(nextState, tokenizer.nextState);
     }
     
     private void advanceNextTokenAndCheckAddInt(Tokenizer tokenizer, Tokenizer.State peek, Tokenizer.State nextState, Integer expected_int) {
         Tokens.Token token = tokenizer.produceToken();
-        //System.out.println(token.toString() + " -> " + tokenizer.state.toString() + " : " + tokenizer.nextState);
+        debugTokenizer(tokenizer, token);
         assertInstanceOf(Tokens.AddInt.class, token);
         
         Tokens.AddInt i = (Tokens.AddInt) token;
         assertEquals(expected_int, i.getValue());
         
-        assertEquals(peek, tokenizer.state.peek());
+        assertEquals(peek, tokenizer.stack.peek());
         assertEquals(nextState, tokenizer.nextState);
     }
     
     private void advanceNextTokenAndCheckAddFloat(Tokenizer tokenizer, Tokenizer.State peek, Tokenizer.State nextState, Float expected_float) {
         Tokens.Token token = tokenizer.produceToken();
-        //System.out.println(token.toString() + " -> " + tokenizer.state.toString() + " : " + tokenizer.nextState);
+        debugTokenizer(tokenizer, token);
         assertInstanceOf(Tokens.AddFloat.class, token);
         
         Tokens.AddFloat f = (Tokens.AddFloat) token;
         assertEquals(expected_float, f.getValue());
         
-        assertEquals(peek, tokenizer.state.peek());
+        assertEquals(peek, tokenizer.stack.peek());
         assertEquals(nextState, tokenizer.nextState);
     }
 
@@ -73,7 +78,7 @@ class TokenizerTest {
         Tokens.ErrorToken err = (Tokens.ErrorToken) token;
         assertEquals(err.getMsg(), "The root node must be either an Object({}) or an Array([])");
 
-        assertEquals(t.state.peek(), Tokenizer.State.ROOT);
+        assertEquals(t.stack.peek(), Tokenizer.State.ROOT);
         assertEquals(t.nextState, Tokenizer.State.ERROR);
     }
 
@@ -85,7 +90,7 @@ class TokenizerTest {
         Tokens.Token token = t.produceToken();
         assertInstanceOf(Tokens.NoToken.class, token);
 
-        assertEquals(t.state.peek(), Tokenizer.State.ROOT);
+        assertEquals(t.stack.peek(), Tokenizer.State.ROOT);
         assertEquals(t.nextState, Tokenizer.State.END);
     }
     

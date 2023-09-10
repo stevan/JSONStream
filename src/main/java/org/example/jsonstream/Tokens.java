@@ -25,10 +25,13 @@ public class Tokens {
     public static class NoToken implements Token {
         public Type getType() { return Type.NO_TOKEN; }
         public boolean isTerminal() { return true; }
+        
+        @Override
+        public String toString() { return "NoToken"; }
     }
 
     public static class ErrorToken implements Token {
-        String msg;
+        final String msg;
 
         ErrorToken(String m) { msg = m; }
 
@@ -43,60 +46,93 @@ public class Tokens {
     public static class StartObject implements Token {
         public Type getType() { return Type.START_OBJECT; }
         public boolean isTerminal() { return false; }
+        
+        @Override
+        public String toString() { return "StartObject"; }
     }
 
     public static class EndObject implements Token {
         public Type getType() { return Type.END_OBJECT; }
         public boolean isTerminal() { return false; }
+        
+        @Override
+        public String toString() { return "EndObject"; }
     }
 
     public static class StartProperty implements Token {
         public Type getType() { return Type.START_PROPERTY; }
         public boolean isTerminal() { return false; }
+        
+        @Override
+        public String toString() { return "StartProperty"; }
     }
 
     public static class EndProperty implements Token {
         public Type getType() { return Type.END_PROPERTY; }
         public boolean isTerminal() { return false; }
+        
+        @Override
+        public String toString() { return "EndProperty"; }
     }
 
     public static class StartArray implements Token {
         public Type getType() { return Type.START_ARRAY; }
         public boolean isTerminal() { return false; }
+        
+        @Override
+        public String toString() { return "StartArray"; }
     }
 
     public static class EndArray implements Token {
         public Type getType() { return Type.END_ARRAY; }
         public boolean isTerminal() { return false; }
+        
+        @Override
+        public String toString() { return "EndArray"; }
     }
 
     public static class StartItem implements Token {
         public Type getType() { return Type.START_ITEM; }
         public boolean isTerminal() { return false; }
+        
+        @Override
+        public String toString() { return "StartItem"; }
     }
 
     public static class EndItem implements Token {
         public Type getType() { return Type.END_ITEM; }
         public boolean isTerminal() { return false; }
+        
+        @Override
+        public String toString() { return "EndItem"; }
     }
 
     public static class AddTrue implements Token {
         public Type getType() { return Type.ADD_TRUE; }
         public boolean isTerminal() { return false; }
+        
+        @Override
+        public String toString() { return "AddTrue"; }
     }
 
     public static class AddFalse implements Token {
         public Type getType() { return Type.ADD_FALSE; }
         public boolean isTerminal() { return false; }
+        
+        @Override
+        public String toString() { return "AddFalse"; }
     }
 
     public static class AddNull implements Token {
         public Type getType() { return Type.ADD_NULL; }
         public boolean isTerminal() { return false; }
+        
+        @Override
+        public String toString() { return "AddNull"; }
     }
     
     public static class AddKey implements Token {
-        String value;
+        final String value;
 
         AddKey(String s) { value = s; }
 
@@ -109,7 +145,7 @@ public class Tokens {
     }
     
     public static class AddString implements Token {
-        String value;
+        final String value;
 
         AddString(String s) { value = s; }
 
@@ -122,7 +158,7 @@ public class Tokens {
     }
     
     public static class AddInt implements Token {
-        Integer value;
+        final Integer value;
 
         AddInt(Integer i) { value = i; }
 
@@ -135,7 +171,7 @@ public class Tokens {
     }
     
     public static class AddFloat implements Token {
-        Float value;
+        final Float value;
 
         AddFloat(Float f) { value = f; }
 

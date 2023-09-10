@@ -10,7 +10,7 @@ public class AST {
     }
     
     public static class ObjectNode implements Node {
-        ArrayList<PropertyNode> properties = new ArrayList<>();
+        final ArrayList<PropertyNode> properties = new ArrayList<>();
         
         public ObjectNode addProperty(PropertyNode prop) {
             properties.add(prop);
@@ -27,7 +27,7 @@ public class AST {
     }
     
     public static class ArrayNode implements Node {
-        ArrayList<ItemNode> items = new ArrayList<>();
+        final ArrayList<ItemNode> items = new ArrayList<>();
         
         public ArrayNode addItem(ItemNode item) {
             items.add(item);
@@ -73,7 +73,7 @@ public class AST {
     }
     
     public static class StringNode implements Node {
-        String value;
+        final String value;
         
         StringNode(String v) { value = v; }
         
@@ -83,7 +83,7 @@ public class AST {
     }
     
     public static class IntNode implements Node {
-        Integer value;
+        final Integer value;
         
         IntNode(Integer v) { value = v; }
         
@@ -93,7 +93,7 @@ public class AST {
     }
     
     public static class FloatNode implements Node {
-        Float value;
+        final Float value;
         
         FloatNode(Float v) { value = v; }
         

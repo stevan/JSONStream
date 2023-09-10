@@ -5,7 +5,7 @@ import java.util.Stack;
 public class Parser {
 
     AST.Node root;
-    Stack<AST.Node> stack = new Stack<>();
+    final Stack<AST.Node> stack = new Stack<>();
     
     public boolean hasRoot() { return root != null; }
     public AST.Node getRoot() {

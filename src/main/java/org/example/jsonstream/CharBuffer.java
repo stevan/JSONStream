@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 public class CharBuffer {
 
-    String source;
+    final String source;
     int index;
 
     CharBuffer(String src) {
@@ -64,7 +64,7 @@ public class CharBuffer {
         return "CharBuffer("+
                         (index != source.length()
                              ? (source.substring(0, index)
-                                    + "<<" + source.charAt(index) + ">>"
+                                    + "«" + source.charAt(index) + "»"
                                     + source.substring(index + 1))
                              : source)
                         + ")["+index+"]";

@@ -27,14 +27,23 @@ public class Tokenizer {
         
         ERROR
     }
+    
+    enum Context {
+        IN_ROOT,
+        IN_OBJECT, IN_PROPERTY,
+        IN_ARRAY, IN_ITEM
+    }
 
-    CharBuffer buffer;
+    final CharBuffer buffer;
+    final Stack<State> stack = new Stack<>();
+    final Stack<Context> context = new Stack<>();
+    
     State nextState;
-    Stack<State> state = new Stack<>();
 
     public Tokenizer(CharBuffer buff) {
         nextState = State.ROOT;
-        state.push(nextState);
+        stack.push(nextState);
+        context.push(Context.IN_ROOT);
         buffer = buff;
     }
     
@@ -170,26 +179,28 @@ public class Tokenizer {
             switch (c) {
                 case '{':
                     buffer.skip(1);
-                    state.push(State.OBJECT);
+                    context.push(Context.IN_OBJECT);
+                    stack.push(State.OBJECT);
+                    context.push(Context.IN_PROPERTY);
                     nextState = State.PROPERTY;
                     return new Tokens.StartObject();
                 case ',':
-                    if (state.peek() == State.PROPERTY) {
-                        //System.out.println("END PROPERTY -> " + state.peek()); // exit the object context
+                    if (stack.peek() == State.PROPERTY) {
                         return endProperty();
                     }
                     buffer.skip(1);
                     return property();
                 case '}':
                     // XXX - check if the state is not empty
-                    if (state.peek() == State.PROPERTY) {
-                        //System.out.println("END PROPERTY -> " + state.peek()); // exit the object context
+                    if (stack.peek() == State.PROPERTY) {
                         return endProperty();
                     }
                     buffer.skip(1);
-                    // XXX - check if the state is not empty here ...
-                    state.pop();
-                    nextState = state.peek(); // restore the previous one
+                    // XXX - check if the context is not empty and peek() == IN_OBJECT
+                    context.pop();
+                    // XXX - check if the stack is not empty and peek() == OBJECT
+                    stack.pop();
+                    nextState = stack.peek(); // restore the previous one
                     return new Tokens.EndObject();
                 default:
                     return error("Expected end of object or start of property, but found ("+c+")");
@@ -203,7 +214,7 @@ public class Tokenizer {
         return character.map((c) -> {
             switch (c) {
                 case '"':
-                    state.push(State.PROPERTY);
+                    stack.push(State.PROPERTY);
                     nextState = State.KEY_LITERAL;
                     return new Tokens.StartProperty();
                 case ':':
@@ -222,9 +233,10 @@ public class Tokenizer {
     }
 
     public Tokens.Token endProperty() {
-        // XXX - check if the state is not empty and peek() == PROPERTY
-        //System.out.println("endProperty() -> " + state.peek());
-        state.pop(); // exit the property context
+        // XXX - check if the context is not empty and peek() == IN_PROPERTY
+        context.pop();
+        // XXX - check if the stack is not empty and peek() == PROPERTY
+        stack.pop(); // exit the property context
         nextState = State.OBJECT;
         return new Tokens.EndProperty();
     }
@@ -233,30 +245,30 @@ public class Tokenizer {
         Optional<Character> character = buffer.skipWhitespaceAndPeek();
         
         return character.map((c) -> {
-            //System.out.println("-- Entering StartArray -------------------------------------");
             switch (c) {
                 case '[':
                     buffer.skip(1);
-                    state.push(State.ARRAY);
+                    context.push(Context.IN_ARRAY);
+                    stack.push(State.ARRAY);
                     nextState = State.ITEM;
                     return new Tokens.StartArray();
                 case ',':
-                    if (state.peek() == State.ITEM) {
-                        //System.out.println("array() -> END ITEM -> " + state.peek());
+                    if (stack.peek() == State.ITEM) {
                         return endItem();
                     }
                     buffer.skip(1);
                     return item();
                 case ']':
                     // XXX - check if the state is not empty
-                    if (state.peek() == State.ITEM) {
-                        //System.out.println("END ITEM -> " + state.peek());
+                    if (stack.peek() == State.ITEM) {
                         return endItem();
                     }
                     buffer.skip(1);
-                    // XXX - check if the state is not empty here ...
-                    state.pop();
-                    nextState = state.peek(); // restore the previous one
+                    // XXX - check if the context is not empty and peek() == IN_ARRAY
+                    context.pop();
+                    // XXX - check if the stack is not empty and peek() == ARRAY
+                    stack.pop();
+                    nextState = stack.peek(); // restore the previous one
                     return new Tokens.EndArray();
                 default:
                     return error("Expected end of array or start of an item, but found ("+c+")");
@@ -271,24 +283,22 @@ public class Tokenizer {
             if ( c == ']' ) {
                 return array();
             }
-            
+        
+        // Handle the item itself
             // if we are in item context
-            //System.out.println("-- Entering StartItem -------------------------------------");
-            if (state.peek() == State.END_ITEM) {
+            if (stack.peek() == State.END_ITEM) {
                 Tokens.Token value = start(); // grab whatever value we find
                 // XXX - check if the Token is an ErrorToken, in which case just return it
                 //       although perhaps we want to set an ERROR state too?? hmmm
                 // XXX - check to be sure we are back in the same item state again
-                //System.out.println("(before) IN ITEM: nextState " + (nextState == null ? "NULL" : nextState));
                 if (nextState == null) nextState = State.END_ITEM;
-                //System.out.println("IN ITEM: nextState " + nextState);
-                //System.out.println("IN ITEM: token " + value);
                 return value;
             }
             
+        // Handle starting the item
             // otherwise, start the item and "recurse"
-            //System.out.println("StartItem and RECURSE");
-            state.push(State.END_ITEM);
+            context.push(Context.IN_ITEM);
+            stack.push(State.END_ITEM);
             nextState = State.ITEM;
             return new Tokens.StartItem();
         }).orElseGet(() -> error("item() expected more characters"));
@@ -296,8 +306,10 @@ public class Tokenizer {
 
     public Tokens.Token endItem() {
         // XXX - check if the state is not empty and peek() == ITEM
-        //System.out.println("endItem() -> " + state.peek());
-        state.pop(); // exit the property context
+        // XXX - check if the context is not empty and peek() == IN_ARRAY
+        context.pop();
+        // XXX - check if the stack is not empty and peek() == ITEM
+        stack.pop(); // exit the property context
         nextState = State.ARRAY;
         return new Tokens.EndItem();
     }
@@ -333,7 +345,7 @@ public class Tokenizer {
                              .map(String::valueOf)
                              .reduce("", (a, n) -> a + n );
             
-            nextState = state.peek(); // return to caller state
+            nextState = stack.peek(); // return to caller state
             return new Tokens.AddString(str);
         }).orElseGet(() -> error("stringLiteral() expected more characters"));
     }
@@ -350,7 +362,7 @@ public class Tokenizer {
                              .map(String::valueOf)
                              .reduce(String.valueOf(c), (a, n) -> a + n );
             
-            nextState = state.peek(); // go back and finish this ...
+            nextState = stack.peek(); // go back and finish this ...
             if ( num.contains(".") ) {
                 return new Tokens.AddFloat(Float.parseFloat(num));
             }
@@ -383,7 +395,7 @@ public class Tokenizer {
             }
             
             if (matchLiteral("alse")) {
-                nextState = state.peek(); // return to caller state
+                nextState = stack.peek(); // return to caller state
                 return new Tokens.AddFalse();
             } else {
                 return error("Bad `false` token");
@@ -400,7 +412,7 @@ public class Tokenizer {
             }
             
             if (matchLiteral("rue")) {
-                nextState = state.peek(); // return to caller state
+                nextState = stack.peek(); // return to caller state
                 return new Tokens.AddTrue();
             } else {
                 return error("Bad `true` token");
@@ -417,7 +429,7 @@ public class Tokenizer {
             }
             
             if (matchLiteral("ull")) {
-                nextState = state.peek(); // return to caller state
+                nextState = stack.peek(); // return to caller state
                 return new Tokens.AddNull();
             } else {
                 return error("Bad `null` token");
