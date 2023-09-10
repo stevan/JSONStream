@@ -1,38 +1,22 @@
 package org.example.jsonstream.parser;
 
-import java.util.ArrayList;
-import java.util.stream.Collectors;
+import java.util.*;
+import java.util.stream.*;
 
 public class AST {
     
-    public interface NodeVisitor {
-        void visit(ObjectNode n);
-        void visit(ArrayNode n);
-        void visit(PropertyNode n);
-        void visit(ItemNode n);
-        void visit(StringNode n);
-        void visit(IntNode n);
-        void visit(FloatNode n);
-        void visit(TrueNode n);
-        void visit(FalseNode n);
-        void visit(NullNode n);
-    }
-    
     public interface Node {
-        void accept(NodeVisitor v);
         String toJSON ();
     }
     
     public static class ObjectNode implements Node {
-        final ArrayList<PropertyNode> properties = new ArrayList<>();
+        private final ArrayList<PropertyNode> properties = new ArrayList<>();
+        
+        public List<PropertyNode> properties() { return properties; }
         
         public ObjectNode addProperty(PropertyNode prop) {
             properties.add(prop);
             return this;
-        }
-        
-        public void accept(NodeVisitor v) {
-            properties.forEach(v::visit);
         }
         
         public String toJSON() {
@@ -45,15 +29,13 @@ public class AST {
     }
     
     public static class ArrayNode implements Node {
-        final ArrayList<ItemNode> items = new ArrayList<>();
+        private final ArrayList<ItemNode> items = new ArrayList<>();
+        
+        public List<ItemNode> items() { return items; }
         
         public ArrayNode addItem(ItemNode item) {
             items.add(item);
             return this;
-        }
-        
-        public void accept(NodeVisitor v) {
-            items.forEach(v::visit);
         }
         
         public String toJSON() {
@@ -66,16 +48,12 @@ public class AST {
     }
     
     public static class PropertyNode implements Node {
-        String key;
-        Node value;
+        private String key;
+        private Node value;
         
-        PropertyNode() {}
-        PropertyNode(String k) { key = k; }
-        PropertyNode(String k, Node v) { key = k; value = v; }
-        
-        public void accept(NodeVisitor v) {
-            v.visit(this);
-        }
+        public PropertyNode() {}
+        public PropertyNode(String k) { key = k; }
+        public PropertyNode(String k, Node v) { key = k; value = v; }
         
         public String getKey() { return key; }
         public Node getValue() { return value; }
@@ -89,14 +67,10 @@ public class AST {
     }
     
     public static class ItemNode implements Node {
-        Node item;
+        private Node item;
         
-        ItemNode() {}
-        ItemNode(Node i) { item = i; }
-        
-        public void accept(NodeVisitor v) {
-            v.visit(this);
-        }
+        public ItemNode() {}
+        public ItemNode(Node i) { item = i; }
         
         public Node getValue() { return item; }
         public ItemNode addValue(Node i) { item = i; return this; }
@@ -107,13 +81,9 @@ public class AST {
     }
     
     public static class StringNode implements Node {
-        final String value;
+        private final String value;
         
-        StringNode(String v) { value = v; }
-        
-        public void accept(NodeVisitor v) {
-            v.visit(this);
-        }
+        public StringNode(String v) { value = v; }
         
         public String getValue() { return value; }
         
@@ -123,13 +93,9 @@ public class AST {
     }
     
     public static class IntNode implements Node {
-        final Integer value;
+        private final Integer value;
         
-        IntNode(Integer v) { value = v; }
-        
-        public void accept(NodeVisitor v) {
-            v.visit(this);
-        }
+        public IntNode(Integer v) { value = v; }
         
         public Integer getValue() { return value; }
         
@@ -139,13 +105,9 @@ public class AST {
     }
     
     public static class FloatNode implements Node {
-        final Float value;
+        private final Float value;
         
-        FloatNode(Float v) { value = v; }
-        
-        public void accept(NodeVisitor v) {
-            v.visit(this);
-        }
+        public FloatNode(Float v) { value = v; }
         
         public Float getValue() { return value; }
         
@@ -155,9 +117,6 @@ public class AST {
     }
     
     public static class TrueNode implements Node {
-        public void accept(NodeVisitor v) {
-            v.visit(this);
-        }
         
         public Boolean getValue() { return true; }
         
@@ -167,9 +126,6 @@ public class AST {
     }
     
     public static class FalseNode implements Node {
-        public void accept(NodeVisitor v) {
-            v.visit(this);
-        }
         
         public Boolean getValue() { return false; }
         
@@ -179,9 +135,6 @@ public class AST {
     }
     
     public static class NullNode implements Node {
-        public void accept(NodeVisitor v) {
-            v.visit(this);
-        }
         
         public String toJSON() {
             return "null";
