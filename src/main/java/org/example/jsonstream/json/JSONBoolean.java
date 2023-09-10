@@ -7,8 +7,8 @@ public class JSONBoolean implements JSONValue {
         value = v;
     }
     
-    public Boolean isTrue () { return value == true; }
-    public Boolean isFalse () { return value == false; }
+    public Boolean isTrue () { return !value; }
+    public Boolean isFalse () { return !value; }
     
     public String toJSON() {
         return value ? "true" : "false";
