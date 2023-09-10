@@ -5,7 +5,21 @@ import java.util.stream.Collectors;
 
 public class AST {
     
+    public interface NodeVisitor {
+        void visit(ObjectNode n);
+        void visit(ArrayNode n);
+        void visit(PropertyNode n);
+        void visit(ItemNode n);
+        void visit(StringNode n);
+        void visit(IntNode n);
+        void visit(FloatNode n);
+        void visit(TrueNode n);
+        void visit(FalseNode n);
+        void visit(NullNode n);
+    }
+    
     public interface Node {
+        void accept(NodeVisitor v);
         String toJSON ();
     }
     
@@ -15,6 +29,10 @@ public class AST {
         public ObjectNode addProperty(PropertyNode prop) {
             properties.add(prop);
             return this;
+        }
+        
+        public void accept(NodeVisitor v) {
+            properties.forEach((p) -> v.visit(p));
         }
         
         public String toJSON() {
@@ -34,6 +52,10 @@ public class AST {
             return this;
         }
         
+        public void accept(NodeVisitor v) {
+            items.forEach((i) -> v.visit(i));
+        }
+        
         public String toJSON() {
             return "["
                     + items.stream()
@@ -51,6 +73,13 @@ public class AST {
         PropertyNode(String k) { key = k; }
         PropertyNode(String k, Node v) { key = k; value = v; }
         
+        public void accept(NodeVisitor v) {
+            v.visit(this);
+        }
+        
+        public String getKey() { return key; }
+        public Node getValue() { return value; }
+        
         public PropertyNode addKey(String k) { key = k;   return this; }
         public PropertyNode addValue(Node v) { value = v; return this; }
         
@@ -65,6 +94,11 @@ public class AST {
         ItemNode() {}
         ItemNode(Node i) { item = i; }
         
+        public void accept(NodeVisitor v) {
+            v.visit(this);
+        }
+        
+        public Node getValue() { return item; }
         public ItemNode addValue(Node i) { item = i; return this; }
         
         public String toJSON() {
@@ -77,6 +111,12 @@ public class AST {
         
         StringNode(String v) { value = v; }
         
+        public void accept(NodeVisitor v) {
+            v.visit(this);
+        }
+        
+        public String getValue() { return value; }
+        
         public String toJSON() {
             return "\"" + value + "\"";
         }
@@ -86,6 +126,12 @@ public class AST {
         final Integer value;
         
         IntNode(Integer v) { value = v; }
+        
+        public void accept(NodeVisitor v) {
+            v.visit(this);
+        }
+        
+        public Integer getValue() { return value; }
         
         public String toJSON() {
             return value.toString();
@@ -97,24 +143,46 @@ public class AST {
         
         FloatNode(Float v) { value = v; }
         
+        public void accept(NodeVisitor v) {
+            v.visit(this);
+        }
+        
+        public Float getValue() { return value; }
+        
         public String toJSON() {
             return value.toString();
         }
     }
     
     public static class TrueNode implements Node {
+        public void accept(NodeVisitor v) {
+            v.visit(this);
+        }
+        
+        public Boolean getValue() { return true; }
+        
         public String toJSON() {
             return "true";
         }
     }
     
     public static class FalseNode implements Node {
+        public void accept(NodeVisitor v) {
+            v.visit(this);
+        }
+        
+        public Boolean getValue() { return false; }
+        
         public String toJSON() {
             return "false";
         }
     }
     
     public static class NullNode implements Node {
+        public void accept(NodeVisitor v) {
+            v.visit(this);
+        }
+        
         public String toJSON() {
             return "null";
         }
