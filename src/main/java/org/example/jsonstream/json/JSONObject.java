@@ -4,13 +4,13 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
 
-public class JSONObject implements JSONValue, JSONCollection {
-    private final Map<String, JSONValue> props;
+public class JSONObject<T extends JSONValue> implements JSONValue, JSONCollection {
+    private final Map<String, T> props;
     
     public JSONObject() { props = Map.of(); }
-    public JSONObject(Map<String, JSONValue> p) { props = p; }
+    public JSONObject(Map<String, T> p) { props = p; }
     
-    public JSONValue get(String k) {
+    public T get(String k) {
         return props.get(k);
     }
     
@@ -30,12 +30,12 @@ public class JSONObject implements JSONValue, JSONCollection {
         return props.isEmpty();
     }
     
-    public void forEach(BiConsumer<String,JSONValue> f) {
+    public void forEach(BiConsumer<String,T> f) {
         props.forEach(f);
     }
     
-    public JSONObject each(BiFunction<String,JSONValue,JSONValue> f) {
-        return new JSONObject(
+    public <R extends JSONValue> JSONObject<R> each(BiFunction<String,T,R> f) {
+        return new JSONObject<R>(
                 props.keySet()
                     .stream()
                     .map((k) -> Map.entry(k, f.apply(k, props.get(k))))
