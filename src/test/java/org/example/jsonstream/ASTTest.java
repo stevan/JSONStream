@@ -1,5 +1,6 @@
 package org.example.jsonstream;
 
+import org.example.jsonstream.parser.AST;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

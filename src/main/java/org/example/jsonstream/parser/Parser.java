@@ -1,4 +1,6 @@
-package org.example.jsonstream;
+package org.example.jsonstream.parser;
+
+import org.example.jsonstream.Tokens;
 
 import java.util.Stack;
 

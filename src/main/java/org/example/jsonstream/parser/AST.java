@@ -1,4 +1,4 @@
-package org.example.jsonstream;
+package org.example.jsonstream.parser;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
