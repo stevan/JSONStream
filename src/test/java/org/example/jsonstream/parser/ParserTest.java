@@ -19,7 +19,7 @@ class ParserTest {
         tokenizer.asStream().forEach(parser::consumeToken);
         
         assertTrue(parser.hasRoot());
-        assertEquals(expected, parser.getRoot().toJSONString());
+        assertEquals(expected, parser.getRoot().toJSON());
         
     }
     
@@ -34,7 +34,7 @@ class ParserTest {
         tokenizer.asStream().forEach(parser::consumeToken);
         
         assertTrue(parser.hasRoot());
-        assertEquals(expected, parser.getRoot().toJSONString());
+        assertEquals(expected, parser.getRoot().toJSON());
         
     }
     
