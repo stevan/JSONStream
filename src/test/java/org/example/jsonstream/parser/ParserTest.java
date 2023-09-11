@@ -1,8 +1,7 @@
 package org.example.jsonstream.parser;
 
-import org.example.jsonstream.tokenizer.CharBuffer;
-import org.example.jsonstream.tokenizer.Tokenizer;
-import org.example.jsonstream.tokenizer.Tokens;
+import org.example.jsonstream.tokenizer.*;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,7 +19,7 @@ class ParserTest {
         tokenizer.asStream().forEach(parser::consumeToken);
         
         assertTrue(parser.hasRoot());
-        assertEquals(expected, parser.getRoot().toJSON());
+        assertEquals(expected, parser.getRoot().toJSONString());
         
     }
     
@@ -35,7 +34,8 @@ class ParserTest {
         tokenizer.asStream().forEach(parser::consumeToken);
         
         assertTrue(parser.hasRoot());
-        assertEquals(expected, parser.getRoot().toJSON());
+        assertEquals(expected, parser.getRoot().toJSONString());
         
     }
+    
 }

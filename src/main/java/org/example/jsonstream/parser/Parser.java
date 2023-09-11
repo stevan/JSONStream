@@ -1,7 +1,6 @@
 package org.example.jsonstream.parser;
 
 import org.example.jsonstream.tokenizer.*;
-
 import java.util.*;
 
 public class Parser {

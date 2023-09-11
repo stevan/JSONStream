@@ -1,6 +1,5 @@
 package org.example.jsonstream.parser;
 
-import org.example.jsonstream.parser.AST;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,7 +32,7 @@ class ASTTest {
                             .addItem(AST.newItem(AST.newArray()))
                             .addItem(AST.newItem(AST.newString("gorch")))));
         
-        assertEquals("{\"foo\":true,\"bar\":[null,10,{}],\"baz\":[false,3.14,[],\"gorch\"]}", o.toJSON());
+        assertEquals("{\"foo\":true,\"bar\":[null,10,{}],\"baz\":[false,3.14,[],\"gorch\"]}", o.toJSONString());
     }
     
 }

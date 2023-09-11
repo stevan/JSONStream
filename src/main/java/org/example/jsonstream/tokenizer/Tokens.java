@@ -1,7 +1,5 @@
 package org.example.jsonstream.tokenizer;
 
-import java.util.Map;
-
 public class Tokens {
 
     public enum Type {
