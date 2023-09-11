@@ -1,4 +1,4 @@
-package org.example.jsonstream;
+package org.example.jsonstream.tokenizer;
 
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -8,8 +8,8 @@ public class CharBuffer {
 
     final String source;
     int index;
-
-    CharBuffer(String src) {
+    
+    public CharBuffer(String src) {
         index = 0;
         source = src;
     }

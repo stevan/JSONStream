@@ -1,9 +1,9 @@
-package org.example.jsonstream;
+package org.example.jsonstream.tokenizer;
 
 import org.junit.jupiter.api.Test;
 
-import static org.example.jsonstream.Tokenizer.*;
-import static org.example.jsonstream.Tokens.*;
+import static org.example.jsonstream.tokenizer.Tokenizer.*;
+import static org.example.jsonstream.tokenizer.Tokens.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 

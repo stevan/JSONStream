@@ -1,6 +1,8 @@
-package org.example.jsonstream;
+package org.example.jsonstream.parser;
 
-import org.example.jsonstream.parser.Parser;
+import org.example.jsonstream.tokenizer.CharBuffer;
+import org.example.jsonstream.tokenizer.Tokenizer;
+import org.example.jsonstream.tokenizer.Tokens;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

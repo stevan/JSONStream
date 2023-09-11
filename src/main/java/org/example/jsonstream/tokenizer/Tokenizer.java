@@ -1,4 +1,4 @@
-package org.example.jsonstream;
+package org.example.jsonstream.tokenizer;
 
 import java.util.Optional;
 import java.util.Stack;
@@ -36,7 +36,11 @@ public class Tokenizer {
         IN_OBJECT, IN_PROPERTY,
         IN_ARRAY, IN_ITEM
     }
-
+    
+    // TODO: make these all private, they are only public
+    //  because they are used in the tests, that can
+    //  be fixed and improve the tests at the same time
+    
     final CharBuffer buffer;
     final Stack<State> stack = new Stack<>();
     final Stack<Context> context = new Stack<>();

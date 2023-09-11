@@ -1,4 +1,4 @@
-package org.example.jsonstream;
+package org.example.jsonstream.parser;
 
 import org.example.jsonstream.parser.AST;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package org.example.jsonstream;
+package org.example.jsonstream.json;
 
 import java.util.*;
 import java.util.stream.Collectors;
