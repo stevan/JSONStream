@@ -6,6 +6,9 @@ import java.util.stream.Stream;
 
 public class Tokenizer {
 
+    // TODO: make this private, it is only public
+    //  because it is used in the tests, that can
+    //  be fixed and improve the tests at the same time
     enum State {
         ROOT,
         END,
@@ -28,7 +31,7 @@ public class Tokenizer {
         ERROR
     }
     
-    enum Context {
+    public enum Context {
         IN_ROOT,
         IN_OBJECT, IN_PROPERTY,
         IN_ARRAY, IN_ITEM
