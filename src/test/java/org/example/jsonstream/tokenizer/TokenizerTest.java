@@ -16,11 +16,10 @@ class TokenizerTest {
 
         Token token = t.produceToken();
         assertInstanceOf(ErrorToken.class, token);
+        assertTrue(t.isInErrorState());
+        
         ErrorToken err = (ErrorToken) token;
         assertEquals(err.getMsg(), "The root node must be either an Object({}) or an Array([])");
-
-        assertEquals(t.stack.peek(), State.ROOT);
-        assertEquals(t.nextState, State.ERROR);
     }
 
     @Test
@@ -29,10 +28,9 @@ class TokenizerTest {
         Tokenizer t = new Tokenizer(b);
 
         Token token = t.produceToken();
+        
         assertInstanceOf(NoToken.class, token);
-
-        assertEquals(t.stack.peek(), State.ROOT);
-        assertEquals(t.nextState, State.END);
+        assertTrue(t.isInEndState());
     }
     
     @Test
@@ -40,9 +38,10 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("[");
         Tokenizer t = new Tokenizer(b);
         
-        checkNextToken(t, StartArray.class, State.ARRAY, State.ITEM);
+        checkNextToken(t, StartArray.class);
 
-        checkNextToken(t, ErrorToken.class, State.ARRAY, State.ERROR);
+        checkNextToken(t, ErrorToken.class);
+        assertTrue(t.isInErrorState());
     }
     
     
@@ -51,10 +50,11 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("[]");
         Tokenizer t = new Tokenizer(b);
         
-        checkNextToken(t, StartArray.class, State.ARRAY, State.ITEM);
-        checkNextToken(t, EndArray.class, State.ROOT, State.ROOT);
+        checkNextToken(t, StartArray.class);
+        checkNextToken(t, EndArray.class);
 
-        checkNextToken(t, NoToken.class, State.ROOT, State.END);
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
     }
     
     @Test
@@ -62,14 +62,15 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("[[]]");
         Tokenizer t = new Tokenizer(b);
         
-        checkNextToken(t, StartArray.class, State.ARRAY, State.ITEM);
-            checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                checkNextToken(t, StartArray.class, State.ARRAY, State.ITEM);
-                checkNextToken(t, EndArray.class, State.END_ITEM, State.END_ITEM);
-            checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-        checkNextToken(t, EndArray.class, State.ROOT, State.ROOT);
+        checkNextToken(t, StartArray.class);
+            checkNextToken(t, StartItem.class);
+                checkNextToken(t, StartArray.class);
+                checkNextToken(t, EndArray.class);
+            checkNextToken(t, EndItem.class);
+        checkNextToken(t, EndArray.class);
 
-        checkNextToken(t, NoToken.class, State.ROOT, State.END);
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
     }
     
     @Test
@@ -77,13 +78,14 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("[10]");
         Tokenizer t = new Tokenizer(b);
         
-        checkNextToken(t, StartArray.class, State.ARRAY, State.ITEM);
-            checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                checkAddIntToken(t, 10, State.END_ITEM, State.END_ITEM);
-            checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-        checkNextToken(t, EndArray.class, State.ROOT, State.ROOT);
+        checkNextToken(t, StartArray.class);
+            checkNextToken(t, StartItem.class);
+                checkAddIntToken(t, 10);
+            checkNextToken(t, EndItem.class);
+        checkNextToken(t, EndArray.class);
 
-        checkNextToken(t, NoToken.class, State.ROOT, State.END);
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
     }
     
     @Test
@@ -91,19 +93,20 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("[10, 3.14, \"foo\"]");
         Tokenizer t = new Tokenizer(b);
         
-        checkNextToken(t, StartArray.class, State.ARRAY, State.ITEM);
-            checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                checkAddIntToken(t, 10, State.END_ITEM, State.END_ITEM);
-            checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-            checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                checkAddFloatToken(t, 3.14F, State.END_ITEM, State.END_ITEM);
-            checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-            checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                checkAddStringToken(t, "foo", State.END_ITEM, State.END_ITEM);
-            checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-        checkNextToken(t, EndArray.class, State.ROOT, State.ROOT);
+        checkNextToken(t, StartArray.class);
+            checkNextToken(t, StartItem.class);
+                checkAddIntToken(t, 10);
+            checkNextToken(t, EndItem.class);
+            checkNextToken(t, StartItem.class);
+                checkAddFloatToken(t, 3.14F);
+            checkNextToken(t, EndItem.class);
+            checkNextToken(t, StartItem.class);
+                checkAddStringToken(t, "foo");
+            checkNextToken(t, EndItem.class);
+        checkNextToken(t, EndArray.class);
 
-        checkNextToken(t, NoToken.class, State.ROOT, State.END);
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
     }
     
     @Test
@@ -111,20 +114,21 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("[10, [3.14]]");
         Tokenizer t = new Tokenizer(b);
         
-        checkNextToken(t, StartArray.class, State.ARRAY, State.ITEM);
-            checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                checkAddIntToken(t, 10, State.END_ITEM, State.END_ITEM);
-            checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-            checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                checkNextToken(t, StartArray.class, State.ARRAY, State.ITEM);
-                    checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                        checkAddFloatToken(t, 3.14F, State.END_ITEM, State.END_ITEM);
-                    checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-                checkNextToken(t, EndArray.class, State.END_ITEM, State.END_ITEM);
-            checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-        checkNextToken(t, EndArray.class, State.ROOT, State.ROOT);
+        checkNextToken(t, StartArray.class);
+            checkNextToken(t, StartItem.class);
+                checkAddIntToken(t, 10);
+            checkNextToken(t, EndItem.class);
+            checkNextToken(t, StartItem.class);
+                checkNextToken(t, StartArray.class);
+                    checkNextToken(t, StartItem.class);
+                        checkAddFloatToken(t, 3.14F);
+                    checkNextToken(t, EndItem.class);
+                checkNextToken(t, EndArray.class);
+            checkNextToken(t, EndItem.class);
+        checkNextToken(t, EndArray.class);
 
-        checkNextToken(t, NoToken.class, State.ROOT, State.END);
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
     }
 
     @Test
@@ -132,9 +136,10 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("{");
         Tokenizer t = new Tokenizer(b);
 
-        checkNextToken(t, StartObject.class, State.OBJECT, State.PROPERTY);
+        checkNextToken(t, StartObject.class);
 
-        checkNextToken(t, ErrorToken.class, State.OBJECT, State.ERROR);
+        checkNextToken(t, ErrorToken.class);
+        assertTrue(t.isInErrorState());
     }
 
 
@@ -143,10 +148,11 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("{}");
         Tokenizer t = new Tokenizer(b);
 
-        checkNextToken(t, StartObject.class, State.OBJECT, State.PROPERTY);
-        checkNextToken(t, EndObject.class, State.ROOT, State.ROOT);
+        checkNextToken(t, StartObject.class);
+        checkNextToken(t, EndObject.class);
 
-        checkNextToken(t, NoToken.class, State.ROOT, State.END);
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
     }
 
     @Test
@@ -154,11 +160,12 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("{\"foo\"");
         Tokenizer t = new Tokenizer(b);
 
-        checkNextToken(t, StartObject.class, State.OBJECT, State.PROPERTY);
-            checkNextToken(t, StartProperty.class, State.PROPERTY, State.KEY_LITERAL);
-                checkAddKeyToken(t, "foo", State.PROPERTY, State.PROPERTY);
+        checkNextToken(t, StartObject.class);
+            checkNextToken(t, StartProperty.class);
+                checkAddKeyToken(t, "foo");
 
-        checkNextToken(t, ErrorToken.class, State.PROPERTY, State.ERROR);
+        checkNextToken(t, ErrorToken.class);
+        assertTrue(t.isInErrorState());
     }
     
     @Test
@@ -166,14 +173,15 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("{\"foo\":\"bar\"}");
         Tokenizer t = new Tokenizer(b);
 
-        checkNextToken(t, StartObject.class, State.OBJECT, State.PROPERTY);
-            checkNextToken(t, StartProperty.class, State.PROPERTY, State.KEY_LITERAL);
-                checkAddKeyToken(t, "foo", State.PROPERTY, State.PROPERTY);
-                checkAddStringToken(t, "bar", State.PROPERTY, State.PROPERTY);
-            checkNextToken(t, EndProperty.class, State.OBJECT, State.OBJECT);
-        checkNextToken(t, EndObject.class, State.ROOT, State.ROOT);
+        checkNextToken(t, StartObject.class);
+            checkNextToken(t, StartProperty.class);
+                checkAddKeyToken(t, "foo");
+                checkAddStringToken(t, "bar");
+            checkNextToken(t, EndProperty.class);
+        checkNextToken(t, EndObject.class);
 
-        checkNextToken(t, NoToken.class, State.ROOT, State.END);
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
     }
     
     @Test
@@ -181,14 +189,15 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("{\"foo\":10}");
         Tokenizer t = new Tokenizer(b);
         
-        checkNextToken(t, StartObject.class, State.OBJECT, State.PROPERTY);
-            checkNextToken(t, StartProperty.class, State.PROPERTY, State.KEY_LITERAL);
-                checkAddKeyToken(t, "foo", State.PROPERTY, State.PROPERTY);
-                checkAddIntToken(t, 10, State.PROPERTY, State.PROPERTY);
-            checkNextToken(t, EndProperty.class, State.OBJECT, State.OBJECT);
-        checkNextToken(t, EndObject.class, State.ROOT, State.ROOT);
+        checkNextToken(t, StartObject.class);
+            checkNextToken(t, StartProperty.class);
+                checkAddKeyToken(t, "foo");
+                checkAddIntToken(t, 10);
+            checkNextToken(t, EndProperty.class);
+        checkNextToken(t, EndObject.class);
 
-        checkNextToken(t, NoToken.class, State.ROOT, State.END);
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
     }
     
     @Test
@@ -196,14 +205,15 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("{\"foo\":false}");
         Tokenizer t = new Tokenizer(b);
         
-        checkNextToken(t, StartObject.class, State.OBJECT, State.PROPERTY);
-            checkNextToken(t, StartProperty.class, State.PROPERTY, State.KEY_LITERAL);
-                checkAddKeyToken(t, "foo", State.PROPERTY, State.PROPERTY);
-                checkNextToken(t, AddFalse.class, State.PROPERTY, State.PROPERTY);
-            checkNextToken(t, EndProperty.class, State.OBJECT, State.OBJECT);
-        checkNextToken(t, EndObject.class, State.ROOT, State.ROOT);
+        checkNextToken(t, StartObject.class);
+            checkNextToken(t, StartProperty.class);
+                checkAddKeyToken(t, "foo");
+                checkNextToken(t, AddFalse.class);
+            checkNextToken(t, EndProperty.class);
+        checkNextToken(t, EndObject.class);
 
-        checkNextToken(t, NoToken.class, State.ROOT, State.END);
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
     }
     
     @Test
@@ -211,14 +221,15 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("{\"foo\":true}");
         Tokenizer t = new Tokenizer(b);
         
-        checkNextToken(t, StartObject.class, State.OBJECT, State.PROPERTY);
-            checkNextToken(t, StartProperty.class, State.PROPERTY, State.KEY_LITERAL);
-                checkAddKeyToken(t, "foo", State.PROPERTY, State.PROPERTY);
-                checkNextToken(t, AddTrue.class, State.PROPERTY, State.PROPERTY);
-            checkNextToken(t, EndProperty.class, State.OBJECT, State.OBJECT);
-        checkNextToken(t, EndObject.class, State.ROOT, State.ROOT);
+        checkNextToken(t, StartObject.class);
+            checkNextToken(t, StartProperty.class);
+                checkAddKeyToken(t, "foo");
+                checkNextToken(t, AddTrue.class);
+            checkNextToken(t, EndProperty.class);
+        checkNextToken(t, EndObject.class);
 
-        checkNextToken(t, NoToken.class, State.ROOT, State.END);
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
     }
     
     @Test
@@ -226,14 +237,15 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("{\"foo\":null}");
         Tokenizer t = new Tokenizer(b);
         
-        checkNextToken(t, StartObject.class, State.OBJECT, State.PROPERTY);
-            checkNextToken(t, StartProperty.class, State.PROPERTY, State.KEY_LITERAL);
-                checkAddKeyToken(t, "foo", State.PROPERTY, State.PROPERTY);
-                checkNextToken(t, AddNull.class, State.PROPERTY, State.PROPERTY);
-            checkNextToken(t, EndProperty.class, State.OBJECT, State.OBJECT);
-        checkNextToken(t, EndObject.class, State.ROOT, State.ROOT);
+        checkNextToken(t, StartObject.class);
+            checkNextToken(t, StartProperty.class);
+                checkAddKeyToken(t, "foo");
+                checkNextToken(t, AddNull.class);
+            checkNextToken(t, EndProperty.class);
+        checkNextToken(t, EndObject.class);
 
-        checkNextToken(t, NoToken.class, State.ROOT, State.END);
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
     }
     
     @Test
@@ -241,15 +253,16 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("{\"foo\":{}}");
         Tokenizer t = new Tokenizer(b);
 
-        checkNextToken(t, StartObject.class, State.OBJECT, State.PROPERTY);
-            checkNextToken(t, StartProperty.class, State.PROPERTY, State.KEY_LITERAL);
-                checkAddKeyToken(t, "foo", State.PROPERTY, State.PROPERTY);
-                checkNextToken(t, StartObject.class, State.OBJECT, State.PROPERTY);
-                checkNextToken(t, EndObject.class, State.PROPERTY, State.PROPERTY);
-            checkNextToken(t, EndProperty.class, State.OBJECT, State.OBJECT);
-        checkNextToken(t, EndObject.class, State.ROOT, State.ROOT);
+        checkNextToken(t, StartObject.class);
+            checkNextToken(t, StartProperty.class);
+                checkAddKeyToken(t, "foo");
+                checkNextToken(t, StartObject.class);
+                checkNextToken(t, EndObject.class);
+            checkNextToken(t, EndProperty.class);
+        checkNextToken(t, EndObject.class);
 
-        checkNextToken(t, NoToken.class, State.ROOT, State.END);
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
     }
     
     @Test
@@ -257,18 +270,19 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("{\"foo\":\"bar\",\"baz\":\"gorch\"}");
         Tokenizer t = new Tokenizer(b);
         
-        checkNextToken(t, StartObject.class, State.OBJECT, State.PROPERTY);
-            checkNextToken(t, StartProperty.class, State.PROPERTY, State.KEY_LITERAL);
-                checkAddKeyToken(t, "foo", State.PROPERTY, State.PROPERTY);
-                checkAddStringToken(t, "bar", State.PROPERTY, State.PROPERTY);
-            checkNextToken(t, EndProperty.class, State.OBJECT, State.OBJECT);
-            checkNextToken(t, StartProperty.class, State.PROPERTY, State.KEY_LITERAL);
-                checkAddKeyToken(t, "baz", State.PROPERTY, State.PROPERTY);
-                checkAddStringToken(t, "gorch", State.PROPERTY, State.PROPERTY);
-            checkNextToken(t, EndProperty.class, State.OBJECT, State.OBJECT);
-        checkNextToken(t, EndObject.class, State.ROOT, State.ROOT);
+        checkNextToken(t, StartObject.class);
+            checkNextToken(t, StartProperty.class);
+                checkAddKeyToken(t, "foo");
+                checkAddStringToken(t, "bar");
+            checkNextToken(t, EndProperty.class);
+            checkNextToken(t, StartProperty.class);
+                checkAddKeyToken(t, "baz");
+                checkAddStringToken(t, "gorch");
+            checkNextToken(t, EndProperty.class);
+        checkNextToken(t, EndObject.class);
 
-        checkNextToken(t, NoToken.class, State.ROOT, State.END);
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
     }
     
     @Test
@@ -276,18 +290,19 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("{\"foo\":\"bar\",\"baz\":3.14}");
         Tokenizer t = new Tokenizer(b);
         
-        checkNextToken(t, StartObject.class, State.OBJECT, State.PROPERTY);
-            checkNextToken(t, StartProperty.class, State.PROPERTY, State.KEY_LITERAL);
-                checkAddKeyToken(t, "foo", State.PROPERTY, State.PROPERTY);
-                checkAddStringToken(t, "bar", State.PROPERTY, State.PROPERTY);
-            checkNextToken(t, EndProperty.class, State.OBJECT, State.OBJECT);
-            checkNextToken(t, StartProperty.class, State.PROPERTY, State.KEY_LITERAL);
-                checkAddKeyToken(t, "baz", State.PROPERTY, State.PROPERTY);
-                checkAddFloatToken(t, 3.14F, State.PROPERTY, State.PROPERTY);
-            checkNextToken(t, EndProperty.class, State.OBJECT, State.OBJECT);
-        checkNextToken(t, EndObject.class, State.ROOT, State.ROOT);
+        checkNextToken(t, StartObject.class);
+            checkNextToken(t, StartProperty.class);
+                checkAddKeyToken(t, "foo");
+                checkAddStringToken(t, "bar");
+            checkNextToken(t, EndProperty.class);
+            checkNextToken(t, StartProperty.class);
+                checkAddKeyToken(t, "baz");
+                checkAddFloatToken(t, 3.14F);
+            checkNextToken(t, EndProperty.class);
+        checkNextToken(t, EndObject.class);
 
-        checkNextToken(t, NoToken.class, State.ROOT, State.END);
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
     }
     
     @Test
@@ -295,106 +310,91 @@ class TokenizerTest {
         CharBuffer b = new CharBuffer("[10, [3.14, {}, true],{\"foo\":true}, null, [false]]");
         Tokenizer t = new Tokenizer(b);
         
-        checkNextToken(t, StartArray.class, State.ARRAY, State.ITEM);
-            checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                checkAddIntToken(t, 10, State.END_ITEM, State.END_ITEM);
-            checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-            checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                checkNextToken(t, StartArray.class, State.ARRAY, State.ITEM);
-                    checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                        checkAddFloatToken(t, 3.14F, State.END_ITEM, State.END_ITEM);
-                    checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-                    checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                        checkNextToken(t, StartObject.class, State.OBJECT, State.PROPERTY);
-                        checkNextToken(t, EndObject.class, State.END_ITEM, State.END_ITEM);
-                    checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-                    checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                        checkNextToken(t, AddTrue.class, State.END_ITEM, State.END_ITEM);
-                    checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-                checkNextToken(t, EndArray.class, State.END_ITEM, State.END_ITEM);
-            checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-            checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                checkNextToken(t, StartObject.class, State.OBJECT, State.PROPERTY);
-                    checkNextToken(t, StartProperty.class, State.PROPERTY, State.KEY_LITERAL);
-                        checkAddKeyToken(t, "foo", State.PROPERTY, State.PROPERTY);
-                        checkNextToken(t, AddTrue.class, State.PROPERTY, State.PROPERTY);
-                    checkNextToken(t, EndProperty.class, State.OBJECT, State.OBJECT);
-                checkNextToken(t, EndObject.class, State.END_ITEM, State.END_ITEM);
-            checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-            checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                checkNextToken(t, AddNull.class, State.END_ITEM, State.END_ITEM);
-            checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-            checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                checkNextToken(t, StartArray.class, State.ARRAY, State.ITEM);
-                    checkNextToken(t, StartItem.class, State.END_ITEM, State.ITEM);
-                        checkNextToken(t, AddFalse.class, State.END_ITEM, State.END_ITEM);
-                    checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-                checkNextToken(t, EndArray.class, State.END_ITEM, State.END_ITEM);
-            checkNextToken(t, EndItem.class, State.ARRAY, State.ARRAY);
-        checkNextToken(t, EndArray.class, State.ROOT, State.ROOT);
+        checkNextToken(t, StartArray.class);
+            checkNextToken(t, StartItem.class);
+                checkAddIntToken(t, 10);
+            checkNextToken(t, EndItem.class);
+            checkNextToken(t, StartItem.class);
+                checkNextToken(t, StartArray.class);
+                    checkNextToken(t, StartItem.class);
+                        checkAddFloatToken(t, 3.14F);
+                    checkNextToken(t, EndItem.class);
+                    checkNextToken(t, StartItem.class);
+                        checkNextToken(t, StartObject.class);
+                        checkNextToken(t, EndObject.class);
+                    checkNextToken(t, EndItem.class);
+                    checkNextToken(t, StartItem.class);
+                        checkNextToken(t, AddTrue.class);
+                    checkNextToken(t, EndItem.class);
+                checkNextToken(t, EndArray.class);
+            checkNextToken(t, EndItem.class);
+            checkNextToken(t, StartItem.class);
+                checkNextToken(t, StartObject.class);
+                    checkNextToken(t, StartProperty.class);
+                        checkAddKeyToken(t, "foo");
+                        checkNextToken(t, AddTrue.class);
+                    checkNextToken(t, EndProperty.class);
+                checkNextToken(t, EndObject.class);
+            checkNextToken(t, EndItem.class);
+            checkNextToken(t, StartItem.class);
+                checkNextToken(t, AddNull.class);
+            checkNextToken(t, EndItem.class);
+            checkNextToken(t, StartItem.class);
+                checkNextToken(t, StartArray.class);
+                    checkNextToken(t, StartItem.class);
+                        checkNextToken(t, AddFalse.class);
+                    checkNextToken(t, EndItem.class);
+                checkNextToken(t, EndArray.class);
+            checkNextToken(t, EndItem.class);
+        checkNextToken(t, EndArray.class);
 
-        checkNextToken(t, NoToken.class, State.ROOT, State.END);
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
     }
     
-    private static void debugTokenizer(Tokenizer tokenizer, Token token) {
-        //System.out.println(tokenizer.buffer.toString() + " = " + token.toString() + " -> " + tokenizer.nextState);
-        //System.out.println("CONTEXT : " + tokenizer.context.toString());
-    }
-    
-    private void checkNextToken(Tokenizer tokenizer, Class<? extends Token> tokenClass, State peek, State nextState) {
+    private void checkNextToken(Tokenizer tokenizer, Class<? extends Token> tokenClass) {
         Token token = tokenizer.produceToken();
         debugTokenizer(tokenizer, token);
         assertInstanceOf(tokenClass, token);
-        
-        assertEquals(peek, tokenizer.stack.peek());
-        assertEquals(nextState, tokenizer.nextState);
     }
     
-    private void checkAddKeyToken(Tokenizer tokenizer, String expected_str, State peek, State nextState) {
+    private void checkAddKeyToken(Tokenizer tokenizer, String expected_str) {
         Token token = tokenizer.produceToken();
         debugTokenizer(tokenizer, token);
         assertInstanceOf(AddKey.class, token);
         
         AddKey str = (AddKey) token;
         assertEquals(expected_str, str.getValue());
-        
-        assertEquals(peek, tokenizer.stack.peek());
-        assertEquals(nextState, tokenizer.nextState);
     }
     
-    private void checkAddStringToken(Tokenizer tokenizer, String expected_str, State peek, State nextState) {
+    private void checkAddStringToken(Tokenizer tokenizer, String expected_str) {
         Token token = tokenizer.produceToken();
         debugTokenizer(tokenizer, token);
         assertInstanceOf(AddString.class, token);
         
         AddString str = (AddString) token;
         assertEquals(expected_str, str.getValue());
-        
-        assertEquals(peek, tokenizer.stack.peek());
-        assertEquals(nextState, tokenizer.nextState);
     }
     
-    private void checkAddIntToken(Tokenizer tokenizer, Integer expected_int, State peek, State nextState) {
+    private void checkAddIntToken(Tokenizer tokenizer, Integer expected_int) {
         Token token = tokenizer.produceToken();
         debugTokenizer(tokenizer, token);
         assertInstanceOf(AddInt.class, token);
         
         AddInt i = (AddInt) token;
         assertEquals(expected_int, i.getValue());
-        
-        assertEquals(peek, tokenizer.stack.peek());
-        assertEquals(nextState, tokenizer.nextState);
     }
     
-    private void checkAddFloatToken(Tokenizer tokenizer, Float expected_float, State peek, State nextState) {
+    private void checkAddFloatToken(Tokenizer tokenizer, Float expected_float) {
         Token token = tokenizer.produceToken();
         debugTokenizer(tokenizer, token);
         assertInstanceOf(AddFloat.class, token);
         
         AddFloat f = (AddFloat) token;
         assertEquals(expected_float, f.getValue());
-        
-        assertEquals(peek, tokenizer.stack.peek());
-        assertEquals(nextState, tokenizer.nextState);
+    }
+    
+    private static void debugTokenizer(Tokenizer tokenizer, Token token) {
+        //System.out.println(tokenizer.getBuffer().toString() + " = " + token.toString() + " >> " + Arrays.toString(token.getContext()));
     }
 }

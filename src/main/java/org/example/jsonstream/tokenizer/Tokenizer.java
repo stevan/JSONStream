@@ -6,10 +6,13 @@ import java.util.stream.Stream;
 
 public class Tokenizer {
 
-    // TODO: make this private, it is only public
-    //  because it is used in the tests, that can
-    //  be fixed and improve the tests at the same time
-    enum State {
+    public enum Context {
+        IN_ROOT,
+        IN_OBJECT, IN_PROPERTY,
+        IN_ARRAY, IN_ITEM
+    }
+
+    private enum State {
         ROOT,
         END,
         
@@ -31,21 +34,11 @@ public class Tokenizer {
         ERROR
     }
     
-    public enum Context {
-        IN_ROOT,
-        IN_OBJECT, IN_PROPERTY,
-        IN_ARRAY, IN_ITEM
-    }
+    private final CharBuffer buffer;
+    private final Stack<State> stack = new Stack<>();
+    private final Stack<Context> context = new Stack<>();
     
-    // TODO: make these all private, they are only public
-    //  because they are used in the tests, that can
-    //  be fixed and improve the tests at the same time
-    
-    final CharBuffer buffer;
-    final Stack<State> stack = new Stack<>();
-    final Stack<Context> context = new Stack<>();
-    
-    State nextState;
+    private State nextState;
 
     public Tokenizer(CharBuffer buff) {
         nextState = State.ROOT;
@@ -54,6 +47,12 @@ public class Tokenizer {
         buffer = buff;
     }
     
+    public CharBuffer getBuffer() { return buffer; }
+
+    public Boolean isInErrorState () { return nextState == State.ERROR; }
+    public Boolean isInEndState () { return nextState == State.END; }
+    // TODO: add some other state predicates here, as needed
+
     public Stream<Tokens.Token> asStream() {
         return Stream.iterate(
             produceToken(),
@@ -124,6 +123,8 @@ public class Tokenizer {
                 token = error("Did not recognise state ("+currState+")");
         }
         
+        token.setContext(context.toArray(new Context[]{}));
+
         return token;
     }
 
@@ -188,7 +189,7 @@ public class Tokenizer {
                     buffer.skip(1);
                     context.push(Context.IN_OBJECT);
                     stack.push(State.OBJECT);
-                    context.push(Context.IN_PROPERTY);
+                    //context.push(Context.IN_PROPERTY);
                     nextState = State.PROPERTY;
                     return new Tokens.StartObject();
                 case ',':
@@ -221,6 +222,7 @@ public class Tokenizer {
         return character.map((c) -> {
             switch (c) {
                 case '"':
+                    context.push(Context.IN_PROPERTY);
                     stack.push(State.PROPERTY);
                     nextState = State.KEY_LITERAL;
                     return new Tokens.StartProperty();

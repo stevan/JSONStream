@@ -1,6 +1,9 @@
 package org.example.jsonstream.tokenizer;
 
+import java.util.Map;
+
 public class Tokens {
+
     public enum Type {
         NO_TOKEN,
         ERROR_TOKEN,
@@ -15,14 +18,29 @@ public class Tokens {
         
         ADD_STRING, ADD_INT, ADD_FLOAT
     }
-    
+
     public interface Token {
         Type getType();
         
+        Tokenizer.Context[] getContext();
+        void setContext(Tokenizer.Context[] ctx);
+
+        Integer getContextDepth();
+
         boolean isTerminal();
     }
     
     private static abstract class BaseToken implements Token {
+        Tokenizer.Context[] context;
+
+        public Tokenizer.Context[] getContext() {
+            return context;
+        }
+        public void setContext(Tokenizer.Context[] ctx) {
+            context = ctx;
+        }
+        public Integer getContextDepth() { return context.length; }
+
         public boolean isTerminal() { return false; }
         
         @Override
