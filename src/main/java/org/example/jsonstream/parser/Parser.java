@@ -1,32 +1,42 @@
 package org.example.jsonstream.parser;
 
-import org.example.jsonstream.tokenizer.Tokens;
+import org.example.jsonstream.tokenizer.*;
 
-import java.util.Stack;
+import java.util.*;
 
 public class Parser {
 
-    AST.Node root;
-    final Stack<AST.Node> stack = new Stack<>();
+    private AST.Node root;
+
+    private final Stack<AST.Node> stack = new Stack<>();
     
-    public boolean hasRoot() { return root != null; }
+    public Boolean hasRoot() {
+        return root != null;
+    }
     public AST.Node getRoot() {
         return root;
     }
     
     public void consumeToken(Tokens.Token token) {
         switch (token.getType()) {
+            case NO_TOKEN:
+                // TODO - throw an error I guess ??
+                break;
+            case ERROR_TOKEN:
+                // TODO - throw the error here
+                break;
+            
             case START_ARRAY:
                 AST.ArrayNode a = AST.newArray();
                 if ( !stack.empty() ) {
-                    addValue(a );
+                    addValue(a);
                 }
                 stack.push(a);
                 break;
             case START_OBJECT:
                 AST.ObjectNode o = AST.newObject();
                 if ( !stack.empty() ) {
-                    addValue(o );
+                    addValue(o);
                 }
                 stack.push(o);
                 break;
@@ -53,36 +63,41 @@ public class Parser {
                 break;
 
             case ADD_TRUE:
-                addValue(AST.newTrue() );
+                addValue(AST.newTrue());
                 break;
             case ADD_FALSE:
-                addValue(AST.newFalse() );
+                addValue(AST.newFalse());
                 break;
             case ADD_NULL:
-                addValue(AST.newNull() );
+                addValue(AST.newNull());
                 break;
             case ADD_STRING:
-                addValue(AST.newString( ((Tokens.AddString) token).getValue() ) );
+                addValue(AST.newString(((Tokens.AddString) token).getValue()));
                 break;
             case ADD_INT:
-                addValue(AST.newInt( ((Tokens.AddInt) token).getValue() ) );
+                addValue(AST.newInt(((Tokens.AddInt) token).getValue()));
                 break;
             case ADD_FLOAT:
-                addValue(AST.newFloat( ((Tokens.AddFloat) token).getValue() ) );
+                addValue(AST.newFloat(((Tokens.AddFloat) token).getValue()));
                 break;
         }
     }
 
     private void addValue (AST.Node node) {
-        if ( stack.peek() instanceof AST.ArrayNode ) {
+        if (stack.peek() instanceof AST.ArrayNode) {
             AST.ArrayNode curr = (AST.ArrayNode) stack.peek();
             curr.addItem( AST.newItem( node ) );
-        }
-        else {
+        } else if (stack.peek() instanceof AST.PropertyNode) {
             AST.PropertyNode prop = (AST.PropertyNode) stack.pop();
-            AST.ObjectNode curr = (AST.ObjectNode) stack.peek();
-            prop.addValue( node );
-            curr.addProperty( prop );
+            if (stack.peek() instanceof AST.ObjectNode) {
+                AST.ObjectNode curr = (AST.ObjectNode) stack.peek();
+                prop.addValue(node);
+                curr.addProperty(prop);
+            } else {
+                // TODO - throw an error here
+            }
+        } else {
+            // TODO - throw an error here
         }
     }
 }

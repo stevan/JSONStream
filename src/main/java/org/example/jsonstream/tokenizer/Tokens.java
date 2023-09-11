@@ -26,6 +26,7 @@ public class Tokens {
         void setContext(Tokenizer.Context[] ctx);
 
         Integer getContextDepth();
+        Tokenizer.Context getCurrentContext();
 
         boolean isTerminal();
     }
@@ -40,6 +41,9 @@ public class Tokens {
             context = ctx;
         }
         public Integer getContextDepth() { return context.length; }
+        public Tokenizer.Context getCurrentContext() {
+            return context[context.length - 1];
+        }
 
         public boolean isTerminal() { return false; }
         
