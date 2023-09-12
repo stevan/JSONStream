@@ -1,5 +1,7 @@
 package org.example.jsonstream.tokenizer;
 
+import javax.swing.plaf.basic.BasicCheckBoxUI;
+
 public class Tokens {
 
     public enum Type {
@@ -30,8 +32,12 @@ public class Tokens {
     }
     
     private static abstract class BasicToken implements Token {
-        Tokenizer.Context[] context;
+        private String name = name = this.getClass().getSimpleName();
+        
+        private Tokenizer.Context[] context;
 
+        public String getName() { return name; }
+        
         public Tokenizer.Context[] getContext() {
             return context;
         }
@@ -46,7 +52,7 @@ public class Tokens {
         public boolean isTerminal() { return false; }
         
         @Override
-        public String toString() { return this.getClass().getSimpleName(); }
+        public String toString() { return name; }
     }
     
     // Terminals
@@ -70,7 +76,7 @@ public class Tokens {
         public boolean isTerminal() { return true; }
         
         @Override
-        public String toString() { return "Error[" + msg + "]"; }
+        public String toString() { return getName() + "[" + msg + "]"; }
     }
     
     // Non Terminals
@@ -128,7 +134,7 @@ public class Tokens {
         public Type getType() { return Type.ADD_KEY; }
         
         @Override
-        public String toString() { return "AddKey[" + value + "]"; }
+        public String toString() { return getName() + "[" + value + "]"; }
     }
     
     public static class AddString extends BasicToken {
@@ -140,7 +146,7 @@ public class Tokens {
         public Type getType() { return Type.ADD_STRING; }
         
         @Override
-        public String toString() { return "AddString[" + value + "]"; }
+        public String toString() { return getName() + "[" + value + "]"; }
     }
     
     public static class AddInt extends BasicToken {
@@ -152,7 +158,7 @@ public class Tokens {
         public Type getType() { return Type.ADD_INT; }
         
         @Override
-        public String toString() { return "AddInt[" + value + "]"; }
+        public String toString() { return getName() + "[" + value + "]"; }
     }
     
     public static class AddFloat extends BasicToken {
@@ -164,7 +170,7 @@ public class Tokens {
         public Type getType() { return Type.ADD_FLOAT; }
         
         @Override
-        public String toString() { return "AddFloat[" + value + "]"; }
+        public String toString() { return getName() + "[" + value + "]"; }
     }
     
 }

@@ -397,6 +397,6 @@ class TokenizerTest {
     }
     
     private static void debugTokenizer(Tokenizer tokenizer, Token token) {
-        //System.out.println(tokenizer.getBuffer().toString() + " = " + token.toString() + " >> " + Arrays.toString(token.getContext()));
+        System.out.println(tokenizer.getBuffer().toString() + " = " + token.toString() + " >> " + Arrays.toString(token.getContext()));
     }
 }
