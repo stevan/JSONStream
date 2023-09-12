@@ -20,7 +20,7 @@ class TokenizerTest {
         assertTrue(t.isInErrorState());
         
         ErrorToken err = (ErrorToken) token;
-        assertEquals(err.getMsg(), "The root node must be either an Object({}) or an Array([])");
+        assertEquals("The root node must be either an Object({}) or an Array([])", err.getMsg());
     }
 
     @Test
