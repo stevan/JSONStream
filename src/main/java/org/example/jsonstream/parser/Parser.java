@@ -51,20 +51,20 @@ public class Parser extends TokenConsumer {
     }
     
     public void consumeToken(Tokens.AddKey token) {
-        AST.PropertyNode p = AST.newProperty().addKey(((Tokens.AddKey) token).getValue());
+        AST.PropertyNode p = AST.newProperty().addKey(token.getValue());
         stack.push(p);
     }
     
     public void consumeToken(Tokens.AddString token) {
-        addValue(AST.newString(((Tokens.AddString) token).getValue()));
+        addValue(AST.newString(token.getValue()));
     }
     
     public void consumeToken(Tokens.AddInt token) {
-        addValue(AST.newInt(((Tokens.AddInt) token).getValue()));
+        addValue(AST.newInt(token.getValue()));
     }
     
     public void consumeToken(Tokens.AddFloat token) {
-        addValue(AST.newFloat(((Tokens.AddFloat) token).getValue()));
+        addValue(AST.newFloat(token.getValue()));
     }
     
     public void consumeToken(Tokens.AddTrue token) { addValue(AST.newTrue()); }
