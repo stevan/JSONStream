@@ -8,6 +8,7 @@ public class Tokenizer {
 
     public enum Context {
         IN_ROOT,
+        IN_ERROR,
         IN_OBJECT, IN_PROPERTY,
         IN_ARRAY, IN_ITEM
     }
@@ -447,7 +448,11 @@ public class Tokenizer {
     }
 
     public Tokens.Token error(String msg) {
-        nextState = State.ERROR;
+        // only the enter state once ...
+        if ( nextState != State.ERROR ) {
+            nextState = State.ERROR;
+            context.push(Context.IN_ERROR);
+        }
         return new Tokens.ErrorToken(msg);
     }
     

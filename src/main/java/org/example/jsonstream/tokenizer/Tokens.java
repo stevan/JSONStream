@@ -29,7 +29,7 @@ public class Tokens {
         boolean isTerminal();
     }
     
-    private static abstract class BaseToken implements Token {
+    private static abstract class BasicToken implements Token {
         Tokenizer.Context[] context;
 
         public Tokenizer.Context[] getContext() {
@@ -51,14 +51,14 @@ public class Tokens {
     
     // Terminals
 
-    public static class NoToken extends BaseToken {
+    public static class NoToken extends BasicToken {
         public Type getType() { return Type.NO_TOKEN; }
         
         @Override
         public boolean isTerminal() { return true; }
     }
     
-    public static class ErrorToken extends BaseToken {
+    public static class ErrorToken extends BasicToken {
         final String msg;
         
         public ErrorToken(String m) { msg = m; }
@@ -75,51 +75,51 @@ public class Tokens {
     
     // Non Terminals
 
-    public static class StartObject extends BaseToken {
+    public static class StartObject extends BasicToken {
         public Type getType() { return Type.START_OBJECT; }
     }
 
-    public static class EndObject extends BaseToken {
+    public static class EndObject extends BasicToken {
         public Type getType() { return Type.END_OBJECT; }
     }
 
-    public static class StartProperty extends BaseToken {
+    public static class StartProperty extends BasicToken {
         public Type getType() { return Type.START_PROPERTY; }
     }
 
-    public static class EndProperty extends BaseToken {
+    public static class EndProperty extends BasicToken {
         public Type getType() { return Type.END_PROPERTY; }
     }
 
-    public static class StartArray extends BaseToken {
+    public static class StartArray extends BasicToken {
         public Type getType() { return Type.START_ARRAY; }
     }
 
-    public static class EndArray extends BaseToken {
+    public static class EndArray extends BasicToken {
         public Type getType() { return Type.END_ARRAY; }
     }
 
-    public static class StartItem extends BaseToken {
+    public static class StartItem extends BasicToken {
         public Type getType() { return Type.START_ITEM; }
     }
 
-    public static class EndItem extends BaseToken {
+    public static class EndItem extends BasicToken {
         public Type getType() { return Type.END_ITEM; }
     }
 
-    public static class AddTrue extends BaseToken {
+    public static class AddTrue extends BasicToken {
         public Type getType() { return Type.ADD_TRUE; }
     }
 
-    public static class AddFalse extends BaseToken {
+    public static class AddFalse extends BasicToken {
         public Type getType() { return Type.ADD_FALSE; }
     }
 
-    public static class AddNull extends BaseToken {
+    public static class AddNull extends BasicToken {
         public Type getType() { return Type.ADD_NULL; }
     }
     
-    public static class AddKey extends BaseToken {
+    public static class AddKey extends BasicToken {
         final String value;
 
         public AddKey(String s) { value = s; }
@@ -131,7 +131,7 @@ public class Tokens {
         public String toString() { return "AddKey[" + value + "]"; }
     }
     
-    public static class AddString extends BaseToken {
+    public static class AddString extends BasicToken {
         final String value;
         
         public AddString(String s) { value = s; }
@@ -143,7 +143,7 @@ public class Tokens {
         public String toString() { return "AddString[" + value + "]"; }
     }
     
-    public static class AddInt extends BaseToken {
+    public static class AddInt extends BasicToken {
         final Integer value;
         
         public AddInt(Integer i) { value = i; }
@@ -155,7 +155,7 @@ public class Tokens {
         public String toString() { return "AddInt[" + value + "]"; }
     }
     
-    public static class AddFloat extends BaseToken {
+    public static class AddFloat extends BasicToken {
         final Float value;
         
         public AddFloat(Float f) { value = f; }
