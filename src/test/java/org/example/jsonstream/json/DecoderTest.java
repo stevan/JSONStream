@@ -16,10 +16,11 @@ class DecoderTest {
         
         @JSONConstructor
         public Person(
-            @JSONProperty("name") String n,
-            @JSONProperty("age") Integer a) {
-            name = n;
-            age = a;
+            @JSONProperty("name") String name,
+            @JSONProperty("age")  Integer age
+        ) {
+            this.name = name;
+            this.age = age;
         }
         
         @Override
