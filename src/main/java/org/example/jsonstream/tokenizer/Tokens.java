@@ -1,7 +1,16 @@
 package org.example.jsonstream.tokenizer;
 
-public class Tokens {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+public class Tokens {
+    
     public enum Type {
         NO_TOKEN,
         ERROR_TOKEN,
@@ -17,24 +26,35 @@ public class Tokens {
         ADD_STRING, ADD_INT, ADD_FLOAT
     }
 
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.RUNTIME)
+    private @interface TokenType {
+        Type type();
+        boolean isTerminal() default false;
+    }
+
     public interface Token {
         Type getType();
+        String getName();
+        boolean isTerminal();
         
         Tokenizer.Context[] getContext();
         void setContext(Tokenizer.Context[] ctx);
 
         Integer getContextDepth();
         Tokenizer.Context getCurrentContext();
-
-        boolean isTerminal();
     }
     
-    public static abstract class BasicToken implements Token {
-        
+    private static abstract class BasicToken implements Token {
+        private Tokenizer.Context[] context = new Tokenizer.Context[0];
+
         private final String name = this.getClass().getSimpleName();
-        private Tokenizer.Context[] context;
+        private final Type type = this.getClass().getAnnotation(TokenType.class).type();
+        private final Boolean isTerminal = this.getClass().getAnnotation(TokenType.class).isTerminal();
 
         public String getName() { return name; }
+        public Type getType() { return type; }
+        public boolean isTerminal() { return isTerminal; }
         
         public Tokenizer.Context[] getContext() {
             return context;
@@ -42,12 +62,12 @@ public class Tokens {
         public void setContext(Tokenizer.Context[] ctx) {
             context = ctx;
         }
-        public Integer getContextDepth() { return context.length; }
+        public Integer getContextDepth() {
+            return context.length;
+        }
         public Tokenizer.Context getCurrentContext() {
             return context[context.length - 1];
         }
-
-        public boolean isTerminal() { return false; }
         
         @Override
         public String toString() { return name; }
@@ -55,117 +75,94 @@ public class Tokens {
     
     // Terminals
 
-    public static class NoToken extends BasicToken {
-        public Type getType() { return Type.NO_TOKEN; }
-        
-        @Override
-        public boolean isTerminal() { return true; }
-    }
+    @TokenType(type = Type.NO_TOKEN, isTerminal = true)
+    public static class NoToken extends BasicToken {}
     
+    @TokenType(type = Type.ERROR_TOKEN, isTerminal = true)
     public static class ErrorToken extends BasicToken {
-        final String msg;
+        private final String msg;
         
         public ErrorToken(String m) { msg = m; }
-
         public String getMsg() { return msg; }
-        public Type getType() { return Type.ERROR_TOKEN; }
-        
-        @Override
-        public boolean isTerminal() { return true; }
         
         @Override
         public String toString() { return getName() + "[" + msg + "]"; }
     }
     
-    // Non Terminals
+    // Non-Terminals
 
-    public static class StartObject extends BasicToken {
-        public Type getType() { return Type.START_OBJECT; }
-    }
+    @TokenType(type = Type.START_OBJECT)
+    public static class StartObject extends BasicToken {}
 
-    public static class EndObject extends BasicToken {
-        public Type getType() { return Type.END_OBJECT; }
-    }
+    @TokenType(type = Type.END_OBJECT)
+    public static class EndObject extends BasicToken {}
 
-    public static class StartProperty extends BasicToken {
-        public Type getType() { return Type.START_PROPERTY; }
-    }
+    @TokenType(type = Type.START_PROPERTY)
+    public static class StartProperty extends BasicToken {}
 
-    public static class EndProperty extends BasicToken {
-        public Type getType() { return Type.END_PROPERTY; }
-    }
+    @TokenType(type = Type.END_PROPERTY)
+    public static class EndProperty extends BasicToken {}
 
-    public static class StartArray extends BasicToken {
-        public Type getType() { return Type.START_ARRAY; }
-    }
+    @TokenType(type = Type.START_ARRAY)
+    public static class StartArray extends BasicToken {}
 
-    public static class EndArray extends BasicToken {
-        public Type getType() { return Type.END_ARRAY; }
-    }
+    @TokenType(type = Type.END_ARRAY)
+    public static class EndArray extends BasicToken {}
 
-    public static class StartItem extends BasicToken {
-        public Type getType() { return Type.START_ITEM; }
-    }
+    @TokenType(type = Type.START_ITEM)
+    public static class StartItem extends BasicToken {}
 
-    public static class EndItem extends BasicToken {
-        public Type getType() { return Type.END_ITEM; }
-    }
+    @TokenType(type = Type.END_ITEM)
+    public static class EndItem extends BasicToken {}
 
-    public static class AddTrue extends BasicToken {
-        public Type getType() { return Type.ADD_TRUE; }
-    }
+    @TokenType(type = Type.ADD_TRUE)
+    public static class AddTrue extends BasicToken {}
 
-    public static class AddFalse extends BasicToken {
-        public Type getType() { return Type.ADD_FALSE; }
-    }
+    @TokenType(type = Type.ADD_FALSE)
+    public static class AddFalse extends BasicToken {}
 
-    public static class AddNull extends BasicToken {
-        public Type getType() { return Type.ADD_NULL; }
-    }
+    @TokenType(type = Type.ADD_NULL)
+    public static class AddNull extends BasicToken {}
     
+    @TokenType(type = Type.ADD_KEY)
     public static class AddKey extends BasicToken {
-        final String value;
+        private final String value;
 
         public AddKey(String s) { value = s; }
-
         public String getValue() { return value; }
-        public Type getType() { return Type.ADD_KEY; }
         
         @Override
         public String toString() { return getName() + "[" + value + "]"; }
     }
     
+    @TokenType(type = Type.ADD_STRING)
     public static class AddString extends BasicToken {
-        final String value;
+        private final String value;
         
         public AddString(String s) { value = s; }
-
         public String getValue() { return value; }
-        public Type getType() { return Type.ADD_STRING; }
         
         @Override
         public String toString() { return getName() + "[" + value + "]"; }
     }
     
+    @TokenType(type = Type.ADD_INT)
     public static class AddInt extends BasicToken {
-        final Integer value;
+        private final Integer value;
         
         public AddInt(Integer i) { value = i; }
-
         public Integer getValue() { return value; }
-        public Type getType() { return Type.ADD_INT; }
         
         @Override
         public String toString() { return getName() + "[" + value + "]"; }
     }
     
+    @TokenType(type = Type.ADD_FLOAT)
     public static class AddFloat extends BasicToken {
-        final Float value;
+        private final Float value;
         
         public AddFloat(Float f) { value = f; }
-
         public Float getValue() { return value; }
-        public Type getType() { return Type.ADD_FLOAT; }
         
         @Override
         public String toString() { return getName() + "[" + value + "]"; }
