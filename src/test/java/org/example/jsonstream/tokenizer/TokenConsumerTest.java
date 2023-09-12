@@ -47,9 +47,13 @@ class TokenConsumerTest {
         Tokenizer t = new Tokenizer(b);
         
         BasicConsumer o = new BasicConsumer();
+        TokenPipeline<BasicConsumer> p = new TokenPipeline<>(new BasicConsumer());
         
-        t.stream().peek(System.out::println).forEach(o::consumeToken);
+        t.asStream()
+            .map(p::pipeToken)
+            .forEach(o::consumeToken);
         
         assertEquals(5, o.getCount());
+        assertEquals(5, p.getConsumer().getCount());
     }
 }

@@ -54,7 +54,7 @@ public class Tokenizer {
     public Boolean isInEndState () { return nextState == State.END; }
     // TODO: add some other state predicates here, as needed
 
-    public Stream<Tokens.Token> stream() {
+    public Stream<Tokens.Token> asStream() {
         return Stream.iterate(
             produceToken(),
             (t) -> !t.isTerminal(),
