@@ -1,7 +1,5 @@
 package org.example.jsonstream.tokenizer;
 
-import javax.swing.plaf.basic.BasicCheckBoxUI;
-
 public class Tokens {
 
     public enum Type {
@@ -31,9 +29,9 @@ public class Tokens {
         boolean isTerminal();
     }
     
-    private static abstract class BasicToken implements Token {
-        private String name = name = this.getClass().getSimpleName();
+    public static abstract class BasicToken implements Token {
         
+        private final String name = this.getClass().getSimpleName();
         private Tokenizer.Context[] context;
 
         public String getName() { return name; }
