@@ -3,7 +3,7 @@ package org.example.jsonstream.parser;
 import org.example.jsonstream.tokenizer.*;
 import java.util.*;
 
-public class Parser {
+public class Parser extends TokenConsumer {
 
     private AST.Node root;
 
@@ -16,70 +16,61 @@ public class Parser {
         return root;
     }
     
-    public void consumeToken(Tokens.Token token) {
-        switch (token.getType()) {
-            case NO_TOKEN:
-                // TODO - throw an error I guess ??
-                break;
-            case ERROR_TOKEN:
-                // TODO - throw the error here
-                break;
-            
-            case START_ARRAY:
-                AST.ArrayNode a = AST.newArray();
-                if ( !stack.empty() ) {
-                    addValue(a);
-                }
-                stack.push(a);
-                break;
-            case START_OBJECT:
-                AST.ObjectNode o = AST.newObject();
-                if ( !stack.empty() ) {
-                    addValue(o);
-                }
-                stack.push(o);
-                break;
-
-            case END_ARRAY:
-            case END_OBJECT:
-                if ( !stack.empty() ) {
-                    AST.Node top = stack.pop();
-                    if ( stack.empty() ) {
-                        root = top;
-                    }
-                }
-                break;
-
-            case START_ITEM:
-            case END_ITEM:
-            case START_PROPERTY:
-            case END_PROPERTY:
-                break;
-
-            case ADD_KEY:
-                AST.PropertyNode p = AST.newProperty().addKey(((Tokens.AddKey) token).getValue());
-                stack.push(p);
-                break;
-
-            case ADD_TRUE:
-                addValue(AST.newTrue());
-                break;
-            case ADD_FALSE:
-                addValue(AST.newFalse());
-                break;
-            case ADD_NULL:
-                addValue(AST.newNull());
-                break;
-            case ADD_STRING:
-                addValue(AST.newString(((Tokens.AddString) token).getValue()));
-                break;
-            case ADD_INT:
-                addValue(AST.newInt(((Tokens.AddInt) token).getValue()));
-                break;
-            case ADD_FLOAT:
-                addValue(AST.newFloat(((Tokens.AddFloat) token).getValue()));
-                break;
+    public void consumeToken(Tokens.StartObject token) {
+        AST.ObjectNode o = AST.newObject();
+        if ( !stack.empty() ) {
+            addValue(o);
         }
+        stack.push(o);
+    }
+    
+    public void consumeToken(Tokens.EndObject token) {
+        if ( !stack.empty() ) {
+            AST.Node top = stack.pop();
+            if ( stack.empty() ) {
+                root = top;
+            }
+        }
+    }
+    
+    public void consumeToken(Tokens.StartArray token) {
+        AST.ArrayNode a = AST.newArray();
+        if ( !stack.empty() ) {
+            addValue(a);
+        }
+        stack.push(a);
+    }
+    
+    public void consumeToken(Tokens.EndArray token) {
+        if ( !stack.empty() ) {
+            AST.Node top = stack.pop();
+            if ( stack.empty() ) {
+                root = top;
+            }
+        }
+    }
+    
+    public void consumeToken(Tokens.AddKey token) {
+        AST.PropertyNode p = AST.newProperty().addKey(((Tokens.AddKey) token).getValue());
+        stack.push(p);
+    }
+    
+    public void consumeToken(Tokens.AddString token) {
+        addValue(AST.newString(((Tokens.AddString) token).getValue()));
+    }
+    
+    public void consumeToken(Tokens.AddInt token) {
+        addValue(AST.newInt(((Tokens.AddInt) token).getValue()));
+    }
+    
+    public void consumeToken(Tokens.AddFloat token) {
+        addValue(AST.newFloat(((Tokens.AddFloat) token).getValue()));
+    }
+    
+    public void consumeToken(Tokens.AddTrue token) { addValue(AST.newTrue()); }
+    public void consumeToken(Tokens.AddFalse token) { addValue(AST.newFalse()); }
+    public void consumeToken(Tokens.AddNull token) {
+        addValue(AST.newNull());
     }
 
     private void addValue (AST.Node node) {
