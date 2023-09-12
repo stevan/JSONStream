@@ -10,7 +10,7 @@ class TokenConsumerTest {
     //  false for any of the consumeToken methods
     //  and you have to override to make it work,
     //  might not be worth the effort actually, have to see
-    public class BasicConsumer extends TokenConsumer {
+    public static class BasicConsumer extends TokenConsumer {
         int count = 0;
         
         public int getCount() { return count; }
