@@ -28,7 +28,7 @@ class QueryEngineTest {
             System.out.println(objectQuery.getResults().get("bar").toString());
             System.out.println(objectQuery.getResults().get("baz").toString());
             
-            objectQuery.getResults().get("baz").stream().forEach(parser::consumeToken);
+            objectQuery.getResults().get("baz").forEach(parser::consumeToken);
             
             System.out.println(parser.getRoot().toJSON());
             

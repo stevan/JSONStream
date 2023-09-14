@@ -61,7 +61,7 @@ public class Tokenizer {
     public TokenIterator iterator() {
         return new TokenIterator(
             () -> !(isDone()),
-            () -> produceToken()
+            this::produceToken
         );
     }
     
