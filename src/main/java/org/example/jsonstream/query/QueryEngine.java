@@ -40,7 +40,7 @@ public class QueryEngine {
                     Tokens.Token t = badToken.get();
                     // we need to check it
                     if (!(t instanceof Tokens.EndObject)) {
-                        throw new QueryException("Expected END_OBJECT after the value, not " + t.getType());
+                        throw new QueryException("Expected EndObject token after the property, not " + t.getType());
                     }
                     // otherwise, we will break out of the loop
                     // because badToken will be Present
@@ -104,6 +104,4 @@ public class QueryEngine {
             return Optional.empty();
         }
     }
-    
-    
 }
