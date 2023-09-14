@@ -59,10 +59,7 @@ public class Tokenizer {
     }
     
     public TokenIterator iterator() {
-        return new TokenIterator(
-            () -> !(isDone()),
-            this::produceToken
-        );
+        return new TokenIterator(this);
     }
     
     public Stream<Tokens.Token> stream() {

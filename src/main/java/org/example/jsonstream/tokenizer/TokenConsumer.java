@@ -2,6 +2,24 @@ package org.example.jsonstream.tokenizer;
 
 public abstract class TokenConsumer {
     
+    public abstract void consumeToken(Tokens.NoToken token);
+    public abstract void consumeToken(Tokens.ErrorToken token);
+    public abstract void consumeToken(Tokens.StartObject token);
+    public abstract void consumeToken(Tokens.EndObject token);
+    public abstract void consumeToken(Tokens.StartProperty token);
+    public abstract void consumeToken(Tokens.EndProperty token);
+    public abstract void consumeToken(Tokens.StartArray token);
+    public abstract void consumeToken(Tokens.EndArray token);
+    public abstract void consumeToken(Tokens.StartItem token);
+    public abstract void consumeToken(Tokens.EndItem token);
+    public abstract void consumeToken(Tokens.AddKey token);
+    public abstract void consumeToken(Tokens.AddString token);
+    public abstract void consumeToken(Tokens.AddInt token);
+    public abstract void consumeToken(Tokens.AddFloat token);
+    public abstract void consumeToken(Tokens.AddTrue token);
+    public abstract void consumeToken(Tokens.AddFalse token);
+    public abstract void consumeToken(Tokens.AddNull token);
+    
     public <T extends Tokens.Token> void consumeToken(T token) {
         switch (token.getType()) {
             case NO_TOKEN:
@@ -57,22 +75,4 @@ public abstract class TokenConsumer {
                 break;
         }
     }
-    
-    public abstract void consumeToken(Tokens.NoToken token);
-    public abstract void consumeToken(Tokens.ErrorToken token);
-    public abstract void consumeToken(Tokens.StartObject token);
-    public abstract void consumeToken(Tokens.EndObject token);
-    public abstract void consumeToken(Tokens.StartProperty token);
-    public abstract void consumeToken(Tokens.EndProperty token);
-    public abstract void consumeToken(Tokens.StartArray token);
-    public abstract void consumeToken(Tokens.EndArray token);
-    public abstract void consumeToken(Tokens.StartItem token);
-    public abstract void consumeToken(Tokens.EndItem token);
-    public abstract void consumeToken(Tokens.AddKey token);
-    public abstract void consumeToken(Tokens.AddString token);
-    public abstract void consumeToken(Tokens.AddInt token);
-    public abstract void consumeToken(Tokens.AddFloat token);
-    public abstract void consumeToken(Tokens.AddTrue token);
-    public abstract void consumeToken(Tokens.AddFalse token);
-    public abstract void consumeToken(Tokens.AddNull token);
 }
