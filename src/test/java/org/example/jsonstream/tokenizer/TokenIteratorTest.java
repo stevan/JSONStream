@@ -17,13 +17,13 @@ class TokenIteratorTest {
         TokenIterator i = t.iterator();
         
         assertTrue(i.hasNext());
-        assertEquals(i.next().getType(), Tokens.Type.START_ARRAY);
+        assertEquals(Tokens.Type.START_ARRAY, i.next().getType());
         
         assertTrue(i.hasNext());
-        assertEquals(i.next().getType(), Tokens.Type.END_ARRAY);
+        assertEquals(Tokens.Type.END_ARRAY, i.next().getType());
         
         assertFalse(i.hasNext());
-        assertThrows(NoSuchElementException.class, () -> i.next());
+        assertThrows(NoSuchElementException.class, i::next);
     }
     
     @Test
@@ -33,11 +33,11 @@ class TokenIteratorTest {
         Tokenizer t = new Tokenizer(b);
         TokenIterator i = t.iterator();
         
-        assertEquals(i.next().getType(), Tokens.Type.START_ARRAY);
-        assertEquals(i.next().getType(), Tokens.Type.END_ARRAY);
+        assertEquals(Tokens.Type.START_ARRAY, i.next().getType());
+        assertEquals(Tokens.Type.END_ARRAY, i.next().getType());
         
         assertFalse(i.hasNext());
-        assertThrows(NoSuchElementException.class, () -> i.next());
+        assertThrows(NoSuchElementException.class, i::next);
     }
     
     @Test
@@ -54,7 +54,7 @@ class TokenIteratorTest {
         assertEquals(Tokens.Type.END_ARRAY, i.next().getType());
         
         assertFalse(i.hasNext());
-        assertThrows(NoSuchElementException.class, () -> i.next());
+        assertThrows(NoSuchElementException.class, i::next);
     }
     
     @Test
@@ -68,6 +68,6 @@ class TokenIteratorTest {
         assertEquals(Tokens.Type.END_ARRAY, i.next().getType());
         
         assertFalse(i.hasNext());
-        assertThrows(NoSuchElementException.class, () -> i.next());
+        assertThrows(NoSuchElementException.class, i::next);
     }
 }

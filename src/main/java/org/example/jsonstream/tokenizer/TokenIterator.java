@@ -26,9 +26,9 @@ public class TokenIterator implements Iterator<Tokens.Token> {
     public Tokens.Token next() {
         if (shouldAdvance) {
             nextToken = tokenizer.produceToken();
-            shouldAdvance = true;
         }
         if (nextToken.isTerminal()) throw new NoSuchElementException();
+        shouldAdvance = true;
         return nextToken;
     }
 }
