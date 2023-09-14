@@ -53,7 +53,11 @@ public class Tokenizer {
     public Boolean isInErrorState () { return nextState == State.ERROR; }
     public Boolean isInEndState () { return nextState == State.END; }
     // TODO: add some other state predicates here, as needed
-
+    
+    public Boolean isDone() {
+        return buffer.isDone() || isInEndState() || isInErrorState();
+    }
+    
     public Stream<Tokens.Token> asStream() {
         return Stream.iterate(
             produceToken(),

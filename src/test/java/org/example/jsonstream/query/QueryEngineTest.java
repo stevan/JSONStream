@@ -3,10 +3,6 @@ package org.example.jsonstream.query;
 import org.example.jsonstream.tokenizer.*;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.*;
-
 class QueryEngineTest {
     
     @Test
@@ -19,15 +15,18 @@ class QueryEngineTest {
             QueryEngine.ObjectQuery objectQuery = new QueryEngine.ObjectQuery();
             
             objectQuery
-                .getValueForKey("foo", Tokens.Type.ADD_INT)
-                .getValueForKey("bar", Tokens.Type.ADD_FLOAT);
+                .getValueForKey("foo")
+                .getValueForKey("baz")
+                .getValueForKey("bar");
             
             objectQuery.execute(tokenizer);
             
-            System.out.println(objectQuery.getResults().toString());
+            System.out.println(objectQuery.getResults().get("foo").toString());
+            System.out.println(objectQuery.getResults().get("bar").toString());
+            System.out.println(objectQuery.getResults().get("baz").toString());
             
         } catch (QueryEngine.QueryException e) {
-            System.out.println(e);;
+            System.out.println(e);
         }
     }
     

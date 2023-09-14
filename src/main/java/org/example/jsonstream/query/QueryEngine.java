@@ -14,24 +14,13 @@ public class QueryEngine {
 
     public static class ObjectQuery {
         
-        Map<String,Tokens.Type> keys = new HashMap<>();
-        Map<String,Tokens.Token> results = new HashMap<>();
+        Set<String> keys = new HashSet<>();
+        Map<String,List<Tokens.Token>> results = new HashMap<>();
         
-        public Map<String,Tokens.Token> getResults() { return results; }
+        public Map<String,List<Tokens.Token>> getResults() { return results; }
     
-        public ObjectQuery getValueForKey(String key, Tokens.Type valueType) throws QueryException {
-            switch (valueType) {
-                case ADD_INT:
-                case ADD_FLOAT:
-                case ADD_STRING:
-                case ADD_TRUE:
-                case ADD_FALSE:
-                case ADD_NULL:
-                    break;
-                default:
-                    throw new QueryException("You can only get Scalar values (ADD_INT, ADD_FLOAT, ADD_*)");
-            }
-            keys.put(key, valueType);
+        public ObjectQuery getValueForKey(String key) {
+            keys.add(key);
             return this;
         }
         
@@ -39,84 +28,81 @@ public class QueryEngine {
             
             Tokens.Token startObjectToken = tokenizer.produceToken();
             
-            if (startObjectToken.getType() == Tokens.Type.START_OBJECT) {
-                
-                Optional<Tokens.Token> maybeBadToken = consumeProperties(tokenizer);
-                do {
-                    // if we have a bad token
-                    if (maybeBadToken.isPresent()) {
-                        Tokens.Token t = maybeBadToken.get();
-                        // we need to check it
-                        if (t.getType() != Tokens.Type.END_OBJECT) {
-                            throw new QueryException("Expected END_OBJECT after the value, not " + t.getType());
-                        }
-                        // otherwise, we can break out of the loop
-                        break;
-                    }
-                    else {
-                        maybeBadToken = consumeProperties(tokenizer);
-                    }
-                } while (maybeBadToken.isEmpty());
+            if (!(startObjectToken instanceof Tokens.StartObject)) {
+                throw new QueryException("ObjectQuery must start with an StartObject token, not "+startObjectToken.getName());
             }
-            else {
-                throw new QueryException("ObjectQuery must start with an START_OBJECT token");
-            }
+            
+            // consume the first property
+            Optional<Tokens.Token> badToken = consumeProperties(tokenizer);
+            do {
+                // if we have a bad token
+                if (badToken.isPresent()) {
+                    Tokens.Token t = badToken.get();
+                    // we need to check it
+                    if (!(t instanceof Tokens.EndObject)) {
+                        throw new QueryException("Expected END_OBJECT after the value, not " + t.getType());
+                    }
+                    // otherwise, we will break out of the loop
+                    // because badToken will be Present
+                    // and therefor, not Empty which is the
+                    // loop conditional :)
+                }
+                else {
+                    // if we do not have a bad token,
+                    // then consume the next property
+                    badToken = consumeProperties(tokenizer);
+                }
+            } while (badToken.isEmpty());
         }
         
-        private Optional<Tokens.Token> consumeProperties(Tokenizer tokenizer) throws QueryException {
+        private Optional<Tokens.Token> consumeProperties(Tokenizer tokenizer) {
             Tokens.Token startPropToken = tokenizer.produceToken();
             
             // if the next token is not a StartProperty
-            // then it is either an error, or an EndObject
-            // either way we kick it back up to execute
-            // to figure this out
-            if (startPropToken.getType() != Tokens.Type.START_PROPERTY) {
+            // then it is either an error(), end(), or
+            // an EndObject, either way we kick it back
+            // up to execute to figure this out
+            if (!(startPropToken instanceof Tokens.StartProperty)) {
                 return Optional.of(startPropToken);
             }
             
             // now get the next token
             Tokens.Token addKeyToken = tokenizer.produceToken();
-            if (addKeyToken.getType() == Tokens.Type.ADD_KEY) {
-                String key = ((Tokens.AddKey) addKeyToken).getValue();
-                
-                if (keys.containsKey(key)) {
-                    Tokens.Type expectedType = keys.get(key);
-                    
-                    Tokens.Token nextToken = tokenizer.produceToken();
-                    if (nextToken.getType() == expectedType) {
-                        results.put(key, nextToken);
-                    }
-                    else {
-                        throw new QueryException("Expected token("+expectedType+") but got token("+nextToken.getName()+") instead");
-                    }
-                    
-                    Tokens.Token endPropToken = tokenizer.produceToken();
-                    if (endPropToken.getType() != Tokens.Type.END_PROPERTY) {
-                        throw new QueryException("Expected END_PROPERTY after the value");
-                    }
-                }
-                else {
-                    Integer depth = startPropToken.getContextDepth();
-                    // skip all the tokens until the END_PROPERTY
-                    tokenizer.asStream()
-                        .takeWhile((t)-> t.getType() != Tokens.Type.END_PROPERTY
-                                             || t.getContextDepth() > depth)
-                        .collect(Collectors.toList());
-                    
-                    System.out.println(tokenizer.getBuffer().toString());
-                }
-            }
-            else {
-                // this should never really happen because
-                // the tokenize will have enforced the
-                // correct sequence of tokens, but we
-                // check it just in case something is awry
-                throw new QueryException("Expected ADD_KEY token after START_PROPERTY token");
+            
+            // if it is not an AddKey token, then it will
+            // likely be an error() or end() token, as the
+            // tokenizer would not emit anything else in
+            // this case
+            if (!(addKeyToken instanceof Tokens.AddKey)) {
+                // again we kick it back up to execute
+                // to work things out and throw the
+                // exception as needed
+                return Optional.of(addKeyToken);
             }
             
+            String key = ((Tokens.AddKey) addKeyToken).getValue();
+            
+            // collect all the tokens until the END_PROPERTY
+            // at the same depth as we started.
+            Integer depth = startPropToken.getContextDepth();
+            List<Tokens.Token> valueTokens = tokenizer.asStream()
+                                                 .takeWhile((t) -> t.getType() != Tokens.Type.END_PROPERTY
+                                                                       || t.getContextDepth() > depth)
+                                                 .collect(Collectors.toList());
+            
+            // we collect these if we need them or not
+            // because we need to advance the tokenizer
+            // so if we don't need them, we simply do
+            // nothing, on purpose
+            if (keys.contains(key)) {
+                results.put(key, valueTokens);
+            }
+
+            // and finally we return empty()
+            // because we have no bad tokens
+            // (:
             return Optional.empty();
         }
-        
     }
     
     
