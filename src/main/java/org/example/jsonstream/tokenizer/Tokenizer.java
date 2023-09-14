@@ -55,13 +55,20 @@ public class Tokenizer {
     // TODO: add some other state predicates here, as needed
     
     public Boolean isDone() {
-        return buffer.isDone() || isInEndState() || isInErrorState();
+        return isInEndState() || isInErrorState();
     }
     
-    public Stream<Tokens.Token> asStream() {
+    public TokenIterator iterator() {
+        return new TokenIterator(
+            () -> !(isDone()),
+            () -> produceToken()
+        );
+    }
+    
+    public Stream<Tokens.Token> stream() {
         return Stream.iterate(
             produceToken(),
-            (t) -> !t.isTerminal(),
+            (t) -> !t.isTerminal(), // TODO - also check isDone here perhaps
             (t) -> produceToken()
         );
     }

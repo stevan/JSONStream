@@ -6,10 +6,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TokenConsumerTest {
     
-    // TODO - make a test consumer that asserts
-    //  false for any of the consumeToken methods
-    //  and you have to override to make it work,
-    //  might not be worth the effort actually, have to see
     public static class BasicConsumer extends TokenConsumer {
         int count = 0;
         
@@ -39,6 +35,19 @@ class TokenConsumerTest {
             count++;
             assertEquals(t.getValue(), 10);
         }
+        
+        public void consumeToken(Tokens.NoToken token) { assertTrue(false); }
+        public void consumeToken(Tokens.ErrorToken token) { assertTrue(false); }
+        public void consumeToken(Tokens.StartObject token) { assertTrue(false); }
+        public void consumeToken(Tokens.EndObject token) { assertTrue(false); }
+        public void consumeToken(Tokens.StartProperty token) { assertTrue(false); }
+        public void consumeToken(Tokens.EndProperty token) { assertTrue(false); }
+        public void consumeToken(Tokens.AddKey token) { assertTrue(false); }
+        public void consumeToken(Tokens.AddString token) { assertTrue(false); }
+        public void consumeToken(Tokens.AddFloat token) { assertTrue(false); }
+        public void consumeToken(Tokens.AddTrue token) { assertTrue(false); }
+        public void consumeToken(Tokens.AddFalse token) { assertTrue(false); }
+        public void consumeToken(Tokens.AddNull token) { assertTrue(false); }
     }
     
     @Test
@@ -47,13 +56,13 @@ class TokenConsumerTest {
         Tokenizer t = new Tokenizer(b);
         
         BasicConsumer o = new BasicConsumer();
-        TokenPipeline<BasicConsumer> p = new TokenPipeline<>(new BasicConsumer());
+        BasicConsumer o2 = new BasicConsumer();
         
-        t.asStream()
-            .map(p::pipeToken)
+        t.stream()
+            .peek(o2::consumeToken)
             .forEach(o::consumeToken);
         
         assertEquals(5, o.getCount());
-        assertEquals(5, p.getConsumer().getCount());
+        assertEquals(5, o2.getCount());
     }
 }

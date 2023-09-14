@@ -18,9 +18,9 @@ class QueryEngineTest {
             QueryEngine.ObjectQuery objectQuery = new QueryEngine.ObjectQuery();
             
             objectQuery
-                .getValueForKey("foo")
-                .getValueForKey("baz")
-                .getValueForKey("bar");
+                .getValueFor("foo")
+                .getValueFor("baz")
+                .getValueFor("bar");
             
             objectQuery.execute(tokenizer);
             

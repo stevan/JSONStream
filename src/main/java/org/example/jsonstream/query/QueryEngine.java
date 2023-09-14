@@ -17,9 +17,11 @@ public class QueryEngine {
         Set<String> keys = new HashSet<>();
         Map<String,List<Tokens.Token>> results = new HashMap<>();
         
-        public Map<String,List<Tokens.Token>> getResults() { return results; }
+        public Map<String,List<Tokens.Token>> getResults() {
+            return results;
+        }
     
-        public ObjectQuery getValueForKey(String key) {
+        public ObjectQuery getValueFor(String key) {
             keys.add(key);
             return this;
         }
@@ -85,7 +87,7 @@ public class QueryEngine {
             // collect all the tokens until the END_PROPERTY
             // at the same depth as we started.
             Integer depth = startPropToken.getContextDepth();
-            List<Tokens.Token> valueTokens = tokenizer.asStream()
+            List<Tokens.Token> valueTokens = tokenizer.stream()
                                                  .takeWhile((t) -> t.getType() != Tokens.Type.END_PROPERTY
                                                                        || t.getContextDepth() > depth)
                                                  .collect(Collectors.toList());

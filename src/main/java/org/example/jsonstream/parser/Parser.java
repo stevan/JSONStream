@@ -16,6 +16,13 @@ public class Parser extends TokenConsumer {
         return root;
     }
     
+    // TODO - these are both error conditions
+    //  so do something useful here
+    public void consumeToken(Tokens.NoToken token) {}
+    public void consumeToken(Tokens.ErrorToken token) {}
+    
+    // consume the tokens we care about
+    
     public void consumeToken(Tokens.StartObject token) {
         AST.ObjectNode o = AST.newObject();
         if ( !stack.empty() ) {
@@ -49,6 +56,12 @@ public class Parser extends TokenConsumer {
             }
         }
     }
+    
+    // skip a few which are not important
+    public void consumeToken(Tokens.StartProperty token) {}
+    public void consumeToken(Tokens.EndProperty token) {}
+    public void consumeToken(Tokens.StartItem token) {}
+    public void consumeToken(Tokens.EndItem token) {}
     
     public void consumeToken(Tokens.AddKey token) {
         AST.PropertyNode p = AST.newProperty().addKey(token.getValue());

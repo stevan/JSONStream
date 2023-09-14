@@ -1,6 +1,6 @@
 package org.example.jsonstream.tokenizer;
 
-public class TokenConsumer {
+public abstract class TokenConsumer {
     
     public <T extends Tokens.Token> void consumeToken(T token) {
         switch (token.getType()) {
@@ -58,21 +58,21 @@ public class TokenConsumer {
         }
     }
     
-    public void consumeToken(Tokens.NoToken token) {}
-    public void consumeToken(Tokens.ErrorToken token) {}
-    public void consumeToken(Tokens.StartObject token) {}
-    public void consumeToken(Tokens.EndObject token) {}
-    public void consumeToken(Tokens.StartProperty token) {}
-    public void consumeToken(Tokens.EndProperty token) {}
-    public void consumeToken(Tokens.StartArray token) {}
-    public void consumeToken(Tokens.EndArray token) {}
-    public void consumeToken(Tokens.StartItem token) {}
-    public void consumeToken(Tokens.EndItem token) {}
-    public void consumeToken(Tokens.AddKey token) {}
-    public void consumeToken(Tokens.AddString token) {}
-    public void consumeToken(Tokens.AddInt token) {}
-    public void consumeToken(Tokens.AddFloat token) {}
-    public void consumeToken(Tokens.AddTrue token) {}
-    public void consumeToken(Tokens.AddFalse token) {}
-    public void consumeToken(Tokens.AddNull token) {}
+    public abstract void consumeToken(Tokens.NoToken token);
+    public abstract void consumeToken(Tokens.ErrorToken token);
+    public abstract void consumeToken(Tokens.StartObject token);
+    public abstract void consumeToken(Tokens.EndObject token);
+    public abstract void consumeToken(Tokens.StartProperty token);
+    public abstract void consumeToken(Tokens.EndProperty token);
+    public abstract void consumeToken(Tokens.StartArray token);
+    public abstract void consumeToken(Tokens.EndArray token);
+    public abstract void consumeToken(Tokens.StartItem token);
+    public abstract void consumeToken(Tokens.EndItem token);
+    public abstract void consumeToken(Tokens.AddKey token);
+    public abstract void consumeToken(Tokens.AddString token);
+    public abstract void consumeToken(Tokens.AddInt token);
+    public abstract void consumeToken(Tokens.AddFloat token);
+    public abstract void consumeToken(Tokens.AddTrue token);
+    public abstract void consumeToken(Tokens.AddFalse token);
+    public abstract void consumeToken(Tokens.AddNull token);
 }

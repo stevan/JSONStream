@@ -32,6 +32,8 @@ class TokenizerTest {
         
         assertInstanceOf(NoToken.class, token);
         assertTrue(t.isInEndState());
+        
+        assertTrue(t.isDone());
     }
     
     @Test
@@ -40,9 +42,12 @@ class TokenizerTest {
         Tokenizer t = new Tokenizer(b);
         
         checkNextToken(t, StartArray.class);
+        assertFalse(t.isDone());
 
         checkNextToken(t, ErrorToken.class);
         assertTrue(t.isInErrorState());
+        
+        assertTrue(t.isDone());
     }
     
     
@@ -52,10 +57,13 @@ class TokenizerTest {
         Tokenizer t = new Tokenizer(b);
         
         checkNextToken(t, StartArray.class);
+        assertFalse(t.isDone());
         checkNextToken(t, EndArray.class);
 
         checkNextToken(t, NoToken.class);
         assertTrue(t.isInEndState());
+        
+        assertTrue(t.isDone());
     }
     
     @Test
