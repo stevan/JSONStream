@@ -26,7 +26,7 @@ public class QueryEngine {
             return this;
         }
         
-        public void execute(Tokenizer tokenizer) throws QueryException {
+        public void execute(TokenProducer tokenizer) throws QueryException {
             
             Tokens.Token startObjectToken = tokenizer.produceToken();
             
@@ -57,7 +57,7 @@ public class QueryEngine {
             } while (badToken.isEmpty());
         }
         
-        private Optional<Tokens.Token> consumeProperties(Tokenizer tokenizer) {
+        private Optional<Tokens.Token> consumeProperties(TokenProducer tokenizer) {
             Tokens.Token startPropToken = tokenizer.produceToken();
             
             // if the next token is not a StartProperty

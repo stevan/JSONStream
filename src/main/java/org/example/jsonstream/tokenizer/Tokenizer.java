@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.Stack;
 import java.util.stream.Stream;
 
-public class Tokenizer {
+public class Tokenizer implements TokenProducer {
 
     public enum Context {
         IN_ROOT,
@@ -54,7 +54,7 @@ public class Tokenizer {
     public Boolean isInEndState () { return nextState == State.END; }
     // TODO: add some other state predicates here, as needed
     
-    public Boolean isDone() {
+    public boolean isDone() {
         return isInEndState() || isInErrorState();
     }
     

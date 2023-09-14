@@ -47,6 +47,10 @@ class TokenizerTest {
         checkNextToken(t, ErrorToken.class);
         assertTrue(t.isInErrorState());
         
+        // and it will keep returning error
+        checkNextToken(t, ErrorToken.class);
+        assertTrue(t.isInErrorState());
+        
         assertTrue(t.isDone());
     }
     
@@ -60,6 +64,10 @@ class TokenizerTest {
         assertFalse(t.isDone());
         checkNextToken(t, EndArray.class);
 
+        checkNextToken(t, NoToken.class);
+        assertTrue(t.isInEndState());
+        
+        // and it will return no token forever now
         checkNextToken(t, NoToken.class);
         assertTrue(t.isInEndState());
         

@@ -5,12 +5,12 @@ import java.util.NoSuchElementException;
 
 public class TokenIterator implements Iterator<Tokens.Token> {
     
-    private final Tokenizer tokenizer;
+    private final TokenProducer tokenizer;
     
     private Tokens.Token nextToken;
     private Boolean shouldAdvance = true;
     
-    public TokenIterator(Tokenizer t) {
+    public TokenIterator(TokenProducer t) {
         tokenizer = t;
     }
     
