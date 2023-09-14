@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TokenConsumerTest {
     
-    public static class BasicConsumer extends TokenConsumer {
+    public static class BasicConsumer implements TokenConsumer {
         int count = 0;
         
         public int getCount() { return count; }

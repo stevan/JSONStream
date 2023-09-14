@@ -3,7 +3,7 @@ package org.example.jsonstream.parser;
 import org.example.jsonstream.tokenizer.*;
 import java.util.*;
 
-public class Parser extends TokenConsumer {
+public class Parser implements TokenConsumer {
 
     private AST.Node root;
 

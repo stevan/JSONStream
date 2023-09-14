@@ -1,26 +1,26 @@
 package org.example.jsonstream.tokenizer;
 
-public abstract class TokenConsumer {
+public interface TokenConsumer {
     
-    public abstract void consumeToken(Tokens.NoToken token);
-    public abstract void consumeToken(Tokens.ErrorToken token);
-    public abstract void consumeToken(Tokens.StartObject token);
-    public abstract void consumeToken(Tokens.EndObject token);
-    public abstract void consumeToken(Tokens.StartProperty token);
-    public abstract void consumeToken(Tokens.EndProperty token);
-    public abstract void consumeToken(Tokens.StartArray token);
-    public abstract void consumeToken(Tokens.EndArray token);
-    public abstract void consumeToken(Tokens.StartItem token);
-    public abstract void consumeToken(Tokens.EndItem token);
-    public abstract void consumeToken(Tokens.AddKey token);
-    public abstract void consumeToken(Tokens.AddString token);
-    public abstract void consumeToken(Tokens.AddInt token);
-    public abstract void consumeToken(Tokens.AddFloat token);
-    public abstract void consumeToken(Tokens.AddTrue token);
-    public abstract void consumeToken(Tokens.AddFalse token);
-    public abstract void consumeToken(Tokens.AddNull token);
+    void consumeToken(Tokens.NoToken token);
+    void consumeToken(Tokens.ErrorToken token);
+    void consumeToken(Tokens.StartObject token);
+    void consumeToken(Tokens.EndObject token);
+    void consumeToken(Tokens.StartProperty token);
+    void consumeToken(Tokens.EndProperty token);
+    void consumeToken(Tokens.StartArray token);
+    void consumeToken(Tokens.EndArray token);
+    void consumeToken(Tokens.StartItem token);
+    void consumeToken(Tokens.EndItem token);
+    void consumeToken(Tokens.AddKey token);
+    void consumeToken(Tokens.AddString token);
+    void consumeToken(Tokens.AddInt token);
+    void consumeToken(Tokens.AddFloat token);
+    void consumeToken(Tokens.AddTrue token);
+    void consumeToken(Tokens.AddFalse token);
+    void consumeToken(Tokens.AddNull token);
     
-    public <T extends Tokens.Token> void consumeToken(T token) {
+    default <T extends Tokens.Token> void consumeToken(T token) {
         switch (token.getType()) {
             case NO_TOKEN:
                 consumeToken((Tokens.NoToken) token);

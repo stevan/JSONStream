@@ -50,6 +50,7 @@ public class Tokens {
 
         public String getName() { return name; }
         public Type getType() { return type; }
+        
         public boolean isTerminal() { return isTerminal; }
         
         public Tokenizer.Context[] getContext() {
