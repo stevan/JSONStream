@@ -80,7 +80,7 @@ public class ObjectQuery {
         
         // collect all the tokens until the END_PROPERTY
         // at the same depth as we started.
-        Integer depth = startPropToken.getContextDepth();
+        int depth = startPropToken.getContextDepth();
         List<Tokens.Token> valueTokens = tokenizer.stream()
                                              .takeWhile((t) -> t.getType() != Tokens.Type.END_PROPERTY
                                                                    || t.getContextDepth() > depth)
