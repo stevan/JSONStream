@@ -9,7 +9,7 @@ public class Parser implements TokenConsumer {
 
     private final Stack<AST.Node> stack = new Stack<>();
     
-    public Boolean hasRoot() {
+    public boolean hasRoot() {
         return root != null;
     }
     public AST.Node getRoot() {

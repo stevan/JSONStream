@@ -50,8 +50,8 @@ public class Tokenizer implements TokenProducer {
     
     public CharBuffer getBuffer() { return buffer; }
 
-    public Boolean isInErrorState () { return nextState == State.ERROR; }
-    public Boolean isInEndState () { return nextState == State.END; }
+    public boolean isInErrorState () { return nextState == State.ERROR; }
+    public boolean isInEndState () { return nextState == State.END; }
     // TODO: add some other state predicates here, as needed
     
     public boolean isDone() {

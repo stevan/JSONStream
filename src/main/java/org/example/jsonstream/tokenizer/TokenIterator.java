@@ -8,7 +8,7 @@ public class TokenIterator implements Iterator<Tokens.Token> {
     private final TokenProducer tokenizer;
     
     private Tokens.Token nextToken;
-    private Boolean shouldAdvance = true;
+    private boolean shouldAdvance = true;
     
     public TokenIterator(TokenProducer t) {
         tokenizer = t;

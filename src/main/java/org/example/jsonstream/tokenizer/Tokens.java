@@ -37,7 +37,7 @@ public class Tokens {
         Tokenizer.Context[] getContext();
         void setContext(Tokenizer.Context[] ctx);
 
-        Integer getContextDepth();
+        int getContextDepth();
         Tokenizer.Context getCurrentContext();
     }
     
@@ -59,7 +59,7 @@ public class Tokens {
         public void setContext(Tokenizer.Context[] ctx) {
             context = ctx;
         }
-        public Integer getContextDepth() {
+        public int getContextDepth() {
             return context.length;
         }
         public Tokenizer.Context getCurrentContext() {

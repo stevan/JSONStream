@@ -52,8 +52,6 @@ public class AST {
         private Node value;
         
         public PropertyNode() {}
-        public PropertyNode(String k) { key = k; }
-        public PropertyNode(String k, Node v) { key = k; value = v; }
         
         public String getKey() { return key; }
         public Node getValue() { return value; }
@@ -69,7 +67,6 @@ public class AST {
     public static class ItemNode implements Node {
         private Node item;
         
-        public ItemNode() {}
         public ItemNode(Node i) { item = i; }
         
         public Node getValue() { return item; }
@@ -118,7 +115,7 @@ public class AST {
     
     public static class TrueNode implements Node {
         
-        public Boolean getValue() { return true; }
+        public boolean getValue() { return true; }
         
         public String toJSON() {
             return "true";
@@ -127,7 +124,7 @@ public class AST {
     
     public static class FalseNode implements Node {
         
-        public Boolean getValue() { return false; }
+        public boolean getValue() { return false; }
         
         public String toJSON() {
             return "false";
