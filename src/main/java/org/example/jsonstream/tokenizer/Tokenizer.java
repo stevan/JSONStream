@@ -35,20 +35,20 @@ public class Tokenizer implements TokenProducer {
         ERROR
     }
     
-    private final CharBuffer buffer;
+    private final CharacterStream buffer;
     private final Stack<State> stack = new Stack<>();
     private final Stack<Context> context = new Stack<>();
     
     private State nextState;
 
-    public Tokenizer(CharBuffer buff) {
+    public Tokenizer(CharacterStream buff) {
         nextState = State.ROOT;
         stack.push(nextState);
         context.push(Context.IN_ROOT);
         buffer = buff;
     }
     
-    public CharBuffer getBuffer() { return buffer; }
+    public CharacterStream getBuffer() { return buffer; }
 
     public boolean isInErrorState () { return nextState == State.ERROR; }
     public boolean isInEndState () { return nextState == State.END; }

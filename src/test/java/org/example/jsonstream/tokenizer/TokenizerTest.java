@@ -10,7 +10,7 @@ class TokenizerTest {
 
     @Test
     void produceToken_ErrorToken() {
-        CharBuffer b = new CharBuffer("1");
+        CharacterStream b = new CharacterStream("1");
         Tokenizer t = new Tokenizer(b);
 
         Token token = t.produceToken();
@@ -25,7 +25,7 @@ class TokenizerTest {
 
     @Test
     void produceToken_NoToken() {
-        CharBuffer b = new CharBuffer("");
+        CharacterStream b = new CharacterStream("");
         Tokenizer t = new Tokenizer(b);
 
         Token token = t.produceToken();
@@ -38,7 +38,7 @@ class TokenizerTest {
     
     @Test
     void produceToken_StartArrayToken() {
-        CharBuffer b = new CharBuffer("[");
+        CharacterStream b = new CharacterStream("[");
         Tokenizer t = new Tokenizer(b);
         
         checkNextToken(t, StartArray.class);
@@ -57,7 +57,7 @@ class TokenizerTest {
     
     @Test
     void produceToken_StartAndEndOArrayToken() {
-        CharBuffer b = new CharBuffer("[]");
+        CharacterStream b = new CharacterStream("[]");
         Tokenizer t = new Tokenizer(b);
         
         checkNextToken(t, StartArray.class);
@@ -76,7 +76,7 @@ class TokenizerTest {
     
     @Test
     void produceToken_ArrayOrArrayToken() {
-        CharBuffer b = new CharBuffer("[[]]");
+        CharacterStream b = new CharacterStream("[[]]");
         Tokenizer t = new Tokenizer(b);
         
         checkNextToken(t, StartArray.class);
@@ -92,7 +92,7 @@ class TokenizerTest {
     
     @Test
     void produceToken_ArrayTokenWithInt() {
-        CharBuffer b = new CharBuffer("[10]");
+        CharacterStream b = new CharacterStream("[10]");
         Tokenizer t = new Tokenizer(b);
         
         checkNextToken(t, StartArray.class);
@@ -107,7 +107,7 @@ class TokenizerTest {
     
     @Test
     void produceToken_ArrayTokenWithLiterals() {
-        CharBuffer b = new CharBuffer("[10, 3.14, \"foo\"]");
+        CharacterStream b = new CharacterStream("[10, 3.14, \"foo\"]");
         Tokenizer t = new Tokenizer(b);
         
         checkNextToken(t, StartArray.class);
@@ -128,7 +128,7 @@ class TokenizerTest {
     
     @Test
     void produceToken_ArrayTokenWithArraysLiterals() {
-        CharBuffer b = new CharBuffer("[10, [3.14]]");
+        CharacterStream b = new CharacterStream("[10, [3.14]]");
         Tokenizer t = new Tokenizer(b);
         
         checkNextToken(t, StartArray.class);
@@ -150,7 +150,7 @@ class TokenizerTest {
 
     @Test
     void produceToken_StartObjectToken() {
-        CharBuffer b = new CharBuffer("{");
+        CharacterStream b = new CharacterStream("{");
         Tokenizer t = new Tokenizer(b);
 
         checkNextToken(t, StartObject.class);
@@ -162,7 +162,7 @@ class TokenizerTest {
 
     @Test
     void produceToken_StartAndEndObjectToken() {
-        CharBuffer b = new CharBuffer("{}");
+        CharacterStream b = new CharacterStream("{}");
         Tokenizer t = new Tokenizer(b);
 
         checkNextToken(t, StartObject.class);
@@ -174,7 +174,7 @@ class TokenizerTest {
 
     @Test
     void produceToken_StartAndEndObjectTokenWithKey() {
-        CharBuffer b = new CharBuffer("{\"foo\"");
+        CharacterStream b = new CharacterStream("{\"foo\"");
         Tokenizer t = new Tokenizer(b);
 
         checkNextToken(t, StartObject.class);
@@ -187,7 +187,7 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithSingleProperty() {
-        CharBuffer b = new CharBuffer("{\"foo\":\"bar\"}");
+        CharacterStream b = new CharacterStream("{\"foo\":\"bar\"}");
         Tokenizer t = new Tokenizer(b);
 
         checkNextToken(t, StartObject.class);
@@ -203,7 +203,7 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithSingleNumericProperty() {
-        CharBuffer b = new CharBuffer("{\"foo\":10}");
+        CharacterStream b = new CharacterStream("{\"foo\":10}");
         Tokenizer t = new Tokenizer(b);
         
         checkNextToken(t, StartObject.class);
@@ -219,7 +219,7 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithSingleFalseProperty() {
-        CharBuffer b = new CharBuffer("{\"foo\":false}");
+        CharacterStream b = new CharacterStream("{\"foo\":false}");
         Tokenizer t = new Tokenizer(b);
         
         checkNextToken(t, StartObject.class);
@@ -235,7 +235,7 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithSingleTrueProperty() {
-        CharBuffer b = new CharBuffer("{\"foo\":true}");
+        CharacterStream b = new CharacterStream("{\"foo\":true}");
         Tokenizer t = new Tokenizer(b);
         
         checkNextToken(t, StartObject.class);
@@ -251,7 +251,7 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithSingleNullProperty() {
-        CharBuffer b = new CharBuffer("{\"foo\":null}");
+        CharacterStream b = new CharacterStream("{\"foo\":null}");
         Tokenizer t = new Tokenizer(b);
         
         checkNextToken(t, StartObject.class);
@@ -267,7 +267,7 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithSinglePropertyAndComplexValue() {
-        CharBuffer b = new CharBuffer("{\"foo\":{}}");
+        CharacterStream b = new CharacterStream("{\"foo\":{}}");
         Tokenizer t = new Tokenizer(b);
 
         checkNextToken(t, StartObject.class);
@@ -284,7 +284,7 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithTwoProperties() {
-        CharBuffer b = new CharBuffer("{\"foo\":\"bar\",\"baz\":\"gorch\"}");
+        CharacterStream b = new CharacterStream("{\"foo\":\"bar\",\"baz\":\"gorch\"}");
         Tokenizer t = new Tokenizer(b);
         
         checkNextToken(t, StartObject.class);
@@ -304,7 +304,7 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithTwoPropertiesWithDifferentTypes() {
-        CharBuffer b = new CharBuffer("{\"foo\":\"bar\",\"baz\":3.14}");
+        CharacterStream b = new CharacterStream("{\"foo\":\"bar\",\"baz\":3.14}");
         Tokenizer t = new Tokenizer(b);
         
         checkNextToken(t, StartObject.class);
@@ -324,7 +324,7 @@ class TokenizerTest {
     
     @Test
     void produceToken_AllTheThings() {
-        CharBuffer b = new CharBuffer("[10, [3.14, {}, true],{\"foo\":true}, null, [false]]");
+        CharacterStream b = new CharacterStream("[10, [3.14, {}, true],{\"foo\":true}, null, [false]]");
         Tokenizer t = new Tokenizer(b);
         
         checkNextToken(t, StartArray.class);

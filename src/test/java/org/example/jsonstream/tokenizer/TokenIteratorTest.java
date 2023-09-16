@@ -12,7 +12,7 @@ class TokenIteratorTest {
     @Test
     void IteratorTest() {
         
-        CharBuffer b = new CharBuffer("[]");
+        CharacterStream b = new CharacterStream("[]");
         Tokenizer t = new Tokenizer(b);
         TokenIterator i = t.iterator();
         
@@ -29,7 +29,7 @@ class TokenIteratorTest {
     @Test
     void IteratorTest_withoutCallingHasNext() {
         
-        CharBuffer b = new CharBuffer("[]");
+        CharacterStream b = new CharacterStream("[]");
         Tokenizer t = new Tokenizer(b);
         TokenIterator i = t.iterator();
         
@@ -43,7 +43,7 @@ class TokenIteratorTest {
     @Test
     void IteratorTest_NoTokenizer() {
         
-        CharBuffer b = new CharBuffer("[]");
+        CharacterStream b = new CharacterStream("[]");
         Tokenizer t = new Tokenizer(b);
         Iterator<Tokens.Token> i = t.stream().collect(Collectors.toList()).iterator();
         
@@ -60,7 +60,7 @@ class TokenIteratorTest {
     @Test
     void IteratorTest_NoTokenizer_withoutCallingHasNext() {
         
-        CharBuffer b = new CharBuffer("[]");
+        CharacterStream b = new CharacterStream("[]");
         Tokenizer t = new Tokenizer(b);
         Iterator<Tokens.Token> i = t.stream().collect(Collectors.toList()).iterator();
         

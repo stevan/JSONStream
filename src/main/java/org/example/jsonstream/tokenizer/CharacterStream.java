@@ -4,12 +4,12 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class CharBuffer {
+public class CharacterStream {
 
     final char[] source;
     int index;
     
-    public CharBuffer(String src) {
+    public CharacterStream(String src) {
         index = 0;
         source = src.toCharArray();
     }
@@ -60,7 +60,7 @@ public class CharBuffer {
     @Override
     public String toString() {
         String orig = String.valueOf(source);
-        return "CharBuffer("+
+        return "CharacterStream("+
                         (index < source.length
                              ? (orig.substring(0, index)
                                     + "«" + orig.charAt(index) + "»"

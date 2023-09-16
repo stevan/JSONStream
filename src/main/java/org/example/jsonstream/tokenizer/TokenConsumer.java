@@ -2,6 +2,8 @@ package org.example.jsonstream.tokenizer;
 
 public interface TokenConsumer {
     
+    // TODO - add a isFull method
+    
     void consumeToken(Tokens.NoToken token);
     void consumeToken(Tokens.ErrorToken token);
     void consumeToken(Tokens.StartObject token);

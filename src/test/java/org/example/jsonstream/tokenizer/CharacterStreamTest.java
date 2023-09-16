@@ -1,17 +1,17 @@
 package org.example.jsonstream.tokenizer;
 
-import org.example.jsonstream.tokenizer.CharBuffer;
+import org.example.jsonstream.tokenizer.CharacterStream;
 import org.junit.jupiter.api.Test;
 
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class CharBufferTest {
+class CharacterStreamTest {
 
     @Test
     void get() {
-        CharBuffer c = new CharBuffer("1,2,3");
+        CharacterStream c = new CharacterStream("1,2,3");
         assertDoesNotThrow(() -> {
             assertFalse(c.isDone());
             assertEquals(c.getNext().get(), '1');
@@ -30,7 +30,7 @@ class CharBufferTest {
 
     @Test
     void peek() {
-        CharBuffer c = new CharBuffer("1");
+        CharacterStream c = new CharacterStream("1");
         assertDoesNotThrow(() -> {
             assertFalse(c.isDone());
             assertEquals(c.peek().get(), '1');
@@ -44,7 +44,7 @@ class CharBufferTest {
 
     @Test
     void isDone() {
-        CharBuffer c = new CharBuffer("1,2,3");
+        CharacterStream c = new CharacterStream("1,2,3");
         assertFalse(c.isDone());
         c.skip(5);
         assertTrue(c.isDone());
@@ -53,7 +53,7 @@ class CharBufferTest {
 
     @Test
     void skip() {
-        CharBuffer c = new CharBuffer("1,2,3,4,5");
+        CharacterStream c = new CharacterStream("1,2,3,4,5");
         assertDoesNotThrow(() -> {
             assertFalse(c.isDone());
             assertEquals(c.getNext().get(), '1');
@@ -73,7 +73,7 @@ class CharBufferTest {
 
     @Test
     void skipWhitespaceAndPeek() {
-        CharBuffer c = new CharBuffer(" 1  2   3    4     ");
+        CharacterStream c = new CharacterStream(" 1  2   3    4     ");
         assertFalse(c.isDone());
         assertDoesNotThrow(() -> {
             assertEquals(c.skipWhitespaceAndPeek().get(), '1');

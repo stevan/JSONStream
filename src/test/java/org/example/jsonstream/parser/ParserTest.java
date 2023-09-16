@@ -12,7 +12,7 @@ class ParserTest {
     void consumeTokensFromTokenizer() {
         final String expected = "{\"foo\":true,\"bar\":[10,3.14,{},null],\"baz\":false}";
         
-        CharBuffer buffer = new CharBuffer(expected);
+        CharacterStream buffer = new CharacterStream(expected);
         Tokenizer tokenizer = new Tokenizer(buffer);
         Parser parser = new Parser();
         
@@ -27,7 +27,7 @@ class ParserTest {
     void consumeTokensFromTokenizerWithArrayRoot() {
         final String expected = "[100,1.332277,{\"foo\":true,\"bar\":[10,3.14,{},null],\"baz\":false},null,null,null]";
         
-        CharBuffer buffer = new CharBuffer(expected);
+        CharacterStream buffer = new CharacterStream(expected);
         Tokenizer tokenizer = new Tokenizer(buffer);
         Parser parser = new Parser();
         
