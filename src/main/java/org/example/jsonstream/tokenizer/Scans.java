@@ -1,7 +1,7 @@
 package org.example.jsonstream.tokenizer;
 
 public class Scans {
-    enum TokenType {
+    public enum TokenType {
         OPERATOR, KEYWORD, STRING, INTEGER, FLOAT, ERROR, END
     }
     
