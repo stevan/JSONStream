@@ -105,7 +105,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token root() {
         if (scanner.hasMore()) {
-            ScannerToken nextToken = scanner.peekNextToken();
+            Scan nextToken = scanner.peekNextToken();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -123,7 +123,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token start() {
         if (scanner.hasMore()) {
-            ScannerToken nextToken = scanner.peekNextToken();
+            Scan nextToken = scanner.peekNextToken();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -161,7 +161,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token object() {
         if (scanner.hasMore()) {
-            ScannerToken nextToken = scanner.peekNextToken();
+            Scan nextToken = scanner.peekNextToken();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -209,7 +209,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token property() {
         if (scanner.hasMore()) {
-            ScannerToken nextToken = scanner.peekNextToken();
+            Scan nextToken = scanner.peekNextToken();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -248,7 +248,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token array() {
         if (scanner.hasMore()) {
-            ScannerToken nextToken = scanner.peekNextToken();
+            Scan nextToken = scanner.peekNextToken();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -296,7 +296,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token item() {
         if (scanner.hasMore()) {
-            ScannerToken nextToken = scanner.peekNextToken();
+            Scan nextToken = scanner.peekNextToken();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -339,7 +339,7 @@ public class Tokenizer implements TokenProducer {
     }
     
     public Tokens.Token keyLiteral() {
-        ScannerToken nextToken = scanner.getNextToken();
+        Scan nextToken = scanner.getNextToken();
         if (nextToken.isError()) {
             return error("Got error from scanner: "+nextToken.getValue());
         }
@@ -349,7 +349,7 @@ public class Tokenizer implements TokenProducer {
     }
     
     public Tokens.Token stringLiteral() {
-        ScannerToken nextToken = scanner.getNextToken();
+        Scan nextToken = scanner.getNextToken();
         if (nextToken.isError()) {
             return error("Got error from scanner: "+nextToken.getValue());
         }
@@ -359,7 +359,7 @@ public class Tokenizer implements TokenProducer {
     }
 
     public Tokens.Token numericLiteral() {
-        ScannerToken nextToken = scanner.getNextToken();
+        Scan nextToken = scanner.getNextToken();
         
         if (nextToken.isError()) {
             return error("Got error from scanner: "+nextToken.getValue());

@@ -1,6 +1,6 @@
 package org.example.jsonstream.tokenizer;
 
-public interface ScannerToken {
+public interface Scan {
     enum TokenType {
         OPERATOR, KEYWORD, STRING, INTEGER, FLOAT, ERROR, END
     }
@@ -28,8 +28,8 @@ public interface ScannerToken {
     }
     
     // true, false, null
-    static ScannerToken keyword(String keyword) {
-        return new ScannerToken() {
+    static Scan keyword(String keyword) {
+        return new Scan() {
             public TokenType getType() { return TokenType.KEYWORD; }
             public String getValue() { return keyword; }
             public boolean isTerminal() { return false; }
@@ -39,8 +39,8 @@ public interface ScannerToken {
     }
     
     // {} [] , :
-    static ScannerToken operator(String operator) {
-        return new ScannerToken() {
+    static Scan operator(String operator) {
+        return new Scan() {
             public TokenType getType() { return TokenType.OPERATOR; }
             public String getValue() { return operator; }
             public boolean isTerminal() { return false; }
@@ -50,8 +50,8 @@ public interface ScannerToken {
     }
     
     // 10, "Foo", 3.14
-    static ScannerToken constant(String constant, TokenType type) {
-        return new ScannerToken() {
+    static Scan constant(String constant, TokenType type) {
+        return new Scan() {
             public TokenType getType() { return type; }
             public String getValue() { return constant; }
             public boolean isTerminal() { return false; }
@@ -60,8 +60,8 @@ public interface ScannerToken {
         };
     }
     
-    static ScannerToken error(String error) {
-        return new ScannerToken() {
+    static Scan error(String error) {
+        return new Scan() {
             public TokenType getType() { return TokenType.ERROR; }
             public String getValue() { return error; }
             public boolean isTerminal() { return true; }
@@ -70,8 +70,8 @@ public interface ScannerToken {
         };
     }
     
-    static ScannerToken end() {
-        return new ScannerToken() {
+    static Scan end() {
+        return new Scan() {
             public TokenType getType() { return TokenType.END; }
             public String getValue() { return ""; }
             public boolean isTerminal() { return true; }
