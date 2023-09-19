@@ -10,7 +10,7 @@ public class Tokenizer implements TokenProducer {
         IN_ERROR,
         IN_OBJECT, IN_PROPERTY,
         IN_ARRAY, IN_ITEM
-    };
+    }
     
     private enum State {
         ROOT,
@@ -168,7 +168,7 @@ public class Tokenizer implements TokenProducer {
             }
             
             if (!nextToken.isOperator()) {
-                return error("Expected end of object or start of property, but found (" + nextToken.toString() + ")");
+                return error("Expected end of object or start of property, but found (" + nextToken + ")");
             }
             
             return switch (nextToken.getValue()) {
@@ -255,7 +255,7 @@ public class Tokenizer implements TokenProducer {
             }
             
             if (!nextToken.isOperator()) {
-                return error("Expected end of array or start of an item, but found (" + nextToken.toString() + ")");
+                return error("Expected end of array or start of an item, but found (" + nextToken + ")");
             }
             
             return switch (nextToken.getValue()) {
@@ -374,19 +374,19 @@ public class Tokenizer implements TokenProducer {
     }
 
     public Tokens.Token falseLiteral() {
-        ScannerToken nextToken = scanner.getNextToken();
+        scanner.discardNextToken();
         // TODO - check for errors and the correct token here
         return new Tokens.AddFalse();
     }
 
     public Tokens.Token trueLiteral() {
-        ScannerToken nextToken = scanner.getNextToken();
+        scanner.discardNextToken();
         // TODO - check for errors and the correct token here
         return new Tokens.AddTrue();
     }
 
     public Tokens.Token nullLiteral() {
-        ScannerToken nextToken = scanner.getNextToken();
+        scanner.discardNextToken();
         // TODO - check for errors and the correct token here
         return new Tokens.AddNull();
     }

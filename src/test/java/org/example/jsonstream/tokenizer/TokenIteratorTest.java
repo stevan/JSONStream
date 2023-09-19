@@ -41,7 +41,7 @@ class TokenIteratorTest {
     void IteratorTest_NoTokenizer() {
         
         Tokenizer t = new Tokenizer(new Scanner("[]"));
-        Iterator<Tokens.Token> i = t.stream().collect(Collectors.toList()).iterator();
+        Iterator<Tokens.Token> i = t.stream().toList().iterator();
         
         assertTrue(i.hasNext());
         assertEquals(Tokens.Type.START_ARRAY, i.next().getType());
@@ -57,7 +57,7 @@ class TokenIteratorTest {
     void IteratorTest_NoTokenizer_withoutCallingHasNext() {
         
         Tokenizer t = new Tokenizer(new Scanner("[]"));
-        Iterator<Tokens.Token> i = t.stream().collect(Collectors.toList()).iterator();
+        Iterator<Tokens.Token> i = t.stream().toList().iterator();
         
         assertEquals(Tokens.Type.START_ARRAY, i.next().getType());
         assertEquals(Tokens.Type.END_ARRAY, i.next().getType());
