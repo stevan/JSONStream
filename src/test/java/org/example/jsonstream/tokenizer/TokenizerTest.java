@@ -10,8 +10,8 @@ class TokenizerTest {
 
     @Test
     void produceToken_ErrorToken() {
-        CharacterStream b = new CharacterStream("1");
-        Tokenizer t = new Tokenizer(b);
+        //CharacterStream b = new CharacterStream("1");
+        Tokenizer t = new Tokenizer(new Scanner("1"));
 
         Token token = t.produceToken();
         assertInstanceOf(ErrorToken.class, token);
@@ -25,8 +25,8 @@ class TokenizerTest {
 
     @Test
     void produceToken_NoToken() {
-        CharacterStream b = new CharacterStream("");
-        Tokenizer t = new Tokenizer(b);
+        //CharacterStream b = new CharacterStream("");
+        Tokenizer t = new Tokenizer(new Scanner(""));
 
         Token token = t.produceToken();
         
@@ -162,8 +162,8 @@ class TokenizerTest {
 
     @Test
     void produceToken_StartAndEndObjectToken() {
-        CharacterStream b = new CharacterStream("{}");
-        Tokenizer t = new Tokenizer(b);
+        //CharacterStream b = new CharacterStream("{}");
+        Tokenizer t = new Tokenizer(new Scanner("{}"));
 
         checkNextToken(t, StartObject.class);
         checkNextToken(t, EndObject.class);
@@ -174,12 +174,12 @@ class TokenizerTest {
 
     @Test
     void produceToken_StartAndEndObjectTokenWithKey() {
-        CharacterStream b = new CharacterStream("{\"foo\"");
-        Tokenizer t = new Tokenizer(b);
+        //CharacterStream b = new CharacterStream("{\"foo\"");
+        Tokenizer t = new Tokenizer(new Scanner("{\"foo\""));
 
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "foo");
+                checkAddKeyToken(t, "\"foo\"");
 
         checkNextToken(t, ErrorToken.class);
         assertTrue(t.isInErrorState());
@@ -187,13 +187,13 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithSingleProperty() {
-        CharacterStream b = new CharacterStream("{\"foo\":\"bar\"}");
-        Tokenizer t = new Tokenizer(b);
+        //CharacterStream b = new CharacterStream("{\"foo\":\"bar\"}");
+        Tokenizer t = new Tokenizer(new Scanner("{\"foo\":\"bar\"}"));
 
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "foo");
-                checkAddStringToken(t, "bar");
+                checkAddKeyToken(t, "\"foo\"");
+                checkAddStringToken(t, "\"bar\"");
             checkNextToken(t, EndProperty.class);
         checkNextToken(t, EndObject.class);
 
@@ -203,12 +203,12 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithSingleNumericProperty() {
-        CharacterStream b = new CharacterStream("{\"foo\":10}");
-        Tokenizer t = new Tokenizer(b);
+        //CharacterStream b = new CharacterStream("{\"foo\":10}");
+        Tokenizer t = new Tokenizer(new Scanner("{\"foo\":10}"));
         
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "foo");
+                checkAddKeyToken(t, "\"foo\"");
                 checkAddIntToken(t, 10);
             checkNextToken(t, EndProperty.class);
         checkNextToken(t, EndObject.class);
@@ -219,12 +219,12 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithSingleFalseProperty() {
-        CharacterStream b = new CharacterStream("{\"foo\":false}");
-        Tokenizer t = new Tokenizer(b);
+        //CharacterStream b = new CharacterStream("{\"foo\":false}");
+        Tokenizer t = new Tokenizer(new Scanner("{\"foo\":false}"));
         
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "foo");
+                checkAddKeyToken(t, "\"foo\"");
                 checkNextToken(t, AddFalse.class);
             checkNextToken(t, EndProperty.class);
         checkNextToken(t, EndObject.class);
@@ -235,12 +235,12 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithSingleTrueProperty() {
-        CharacterStream b = new CharacterStream("{\"foo\":true}");
-        Tokenizer t = new Tokenizer(b);
+        //CharacterStream b = new CharacterStream("{\"foo\":true}");
+        Tokenizer t = new Tokenizer(new Scanner("{\"foo\":true}"));
         
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "foo");
+                checkAddKeyToken(t, "\"foo\"");
                 checkNextToken(t, AddTrue.class);
             checkNextToken(t, EndProperty.class);
         checkNextToken(t, EndObject.class);
@@ -251,12 +251,12 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithSingleNullProperty() {
-        CharacterStream b = new CharacterStream("{\"foo\":null}");
-        Tokenizer t = new Tokenizer(b);
+        //CharacterStream b = new CharacterStream("{\"foo\":null}");
+        Tokenizer t = new Tokenizer(new Scanner("{\"foo\":null}"));
         
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "foo");
+                checkAddKeyToken(t, "\"foo\"");
                 checkNextToken(t, AddNull.class);
             checkNextToken(t, EndProperty.class);
         checkNextToken(t, EndObject.class);
@@ -267,12 +267,12 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithSinglePropertyAndComplexValue() {
-        CharacterStream b = new CharacterStream("{\"foo\":{}}");
-        Tokenizer t = new Tokenizer(b);
+        //CharacterStream b = new CharacterStream("{\"foo\":{}}");
+        Tokenizer t = new Tokenizer(new Scanner("{\"foo\":{}}"));
 
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "foo");
+                checkAddKeyToken(t, "\"foo\"");
                 checkNextToken(t, StartObject.class);
                 checkNextToken(t, EndObject.class);
             checkNextToken(t, EndProperty.class);
@@ -284,17 +284,17 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithTwoProperties() {
-        CharacterStream b = new CharacterStream("{\"foo\":\"bar\",\"baz\":\"gorch\"}");
-        Tokenizer t = new Tokenizer(b);
+        //CharacterStream b = new CharacterStream("{\"foo\":\"bar\",\"baz\":\"gorch\"}");
+        Tokenizer t = new Tokenizer(new Scanner("{\"foo\":\"bar\",\"baz\":\"gorch\"}"));
         
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "foo");
-                checkAddStringToken(t, "bar");
+                checkAddKeyToken(t, "\"foo\"");
+                checkAddStringToken(t, "\"bar\"");
             checkNextToken(t, EndProperty.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "baz");
-                checkAddStringToken(t, "gorch");
+                checkAddKeyToken(t, "\"baz\"");
+                checkAddStringToken(t, "\"gorch\"");
             checkNextToken(t, EndProperty.class);
         checkNextToken(t, EndObject.class);
 
@@ -304,16 +304,16 @@ class TokenizerTest {
     
     @Test
     void produceToken_ObjectTokensWithTwoPropertiesWithDifferentTypes() {
-        CharacterStream b = new CharacterStream("{\"foo\":\"bar\",\"baz\":3.14}");
-        Tokenizer t = new Tokenizer(b);
+        //CharacterStream b = new CharacterStream("{\"foo\":\"bar\",\"baz\":3.14}");
+        Tokenizer t = new Tokenizer(new Scanner("{\"foo\":\"bar\",\"baz\":3.14}"));
         
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "foo");
-                checkAddStringToken(t, "bar");
+                checkAddKeyToken(t, "\"foo\"");
+                checkAddStringToken(t, "\"bar\"");
             checkNextToken(t, EndProperty.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "baz");
+                checkAddKeyToken(t, "\"baz\"");
                 checkAddFloatToken(t, 3.14F);
             checkNextToken(t, EndProperty.class);
         checkNextToken(t, EndObject.class);

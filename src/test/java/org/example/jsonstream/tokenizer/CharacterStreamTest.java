@@ -1,6 +1,5 @@
 package org.example.jsonstream.tokenizer;
 
-import org.example.jsonstream.tokenizer.CharacterStream;
 import org.junit.jupiter.api.Test;
 
 import java.util.NoSuchElementException;

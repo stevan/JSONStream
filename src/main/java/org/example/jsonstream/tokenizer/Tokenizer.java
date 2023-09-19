@@ -11,8 +11,8 @@ public class Tokenizer implements TokenProducer {
         IN_ERROR,
         IN_OBJECT, IN_PROPERTY,
         IN_ARRAY, IN_ITEM
-    }
-
+    };
+    
     private enum State {
         ROOT,
         END,
@@ -35,6 +35,7 @@ public class Tokenizer implements TokenProducer {
         ERROR
     }
     
+    private final Scanner scanner;
     private final CharacterStream buffer;
     private final Stack<State> stack = new Stack<>();
     private final Stack<Context> context = new Stack<>();
@@ -46,9 +47,19 @@ public class Tokenizer implements TokenProducer {
         stack.push(nextState);
         context.push(Context.IN_ROOT);
         buffer = buff;
+        scanner = null;
     }
     
-    public CharacterStream getBuffer() { return buffer; }
+    public Tokenizer(Scanner scanr) {
+        nextState = State.ROOT;
+        stack.push(nextState);
+        context.push(Context.IN_ROOT);
+        buffer = null;
+        scanner = scanr;
+    }
+    
+    public CharacterStream getCharacterStream() { return buffer; }
+    public Scanner getScanner() { return scanner; }
 
     public boolean isInErrorState () { return nextState == State.ERROR; }
     public boolean isInEndState () { return nextState == State.END; }
@@ -138,6 +149,24 @@ public class Tokenizer implements TokenProducer {
     }
 
     public Tokens.Token root() {
+        
+        if (scanner.hasMore()) {
+            ScannerToken nextToken = scanner.peekNextToken();
+            
+            if (nextToken.isError()) {
+                return error("Got error from scanner: "+nextToken.getValue());
+            }
+            
+            return switch (nextToken.getValue()) {
+                case "{" -> object();
+                case "[" -> array();
+                default -> error("The root node must be either an Object({}) or an Array([])");
+            };
+        } else {
+            return end();
+        }
+        
+        /*
         Optional<Character> character = buffer.skipWhitespaceAndPeek();
 
         return character.map((c) -> {
@@ -151,9 +180,39 @@ public class Tokenizer implements TokenProducer {
                     return error("The root node must be either an Object({}) or an Array([])");
             }
         }).orElseGet(this::end);
+         */
     }
 
     public Tokens.Token start() {
+        
+        if (scanner.hasMore()) {
+            ScannerToken nextToken = scanner.peekNextToken();
+            
+            if (nextToken.isError()) {
+                return error("Got error from scanner: "+nextToken.getValue());
+            }
+            
+            String value = nextToken.getValue();
+            return switch (value) {
+                case "{"     -> object();
+                case "["     -> array();
+                case "true"  -> trueLiteral();
+                case "false" -> falseLiteral();
+                case "null"  -> nullLiteral();
+                default      -> {
+                    if (nextToken.isConstant()) {
+                        if (nextToken.isString()) yield stringLiteral();
+                        else if (nextToken.isNumber()) yield numericLiteral();
+                        else yield error("Expected constant, got "+nextToken);
+                    } else {
+                        yield error("Unrecognized start character (" + value + ")");
+                    }
+                }
+            };
+        } else {
+            return end();
+        }
+        /*
         Optional<Character> character = buffer.skipWhitespaceAndPeek();
         
         return character.map((c) -> {
@@ -179,6 +238,8 @@ public class Tokenizer implements TokenProducer {
                     return error("Unrecognized start character ("+c+")");
             }
         }).orElseGet(() -> error("start() expected more characters"));
+        
+         */
     }
 
     public Tokens.Token end() {
@@ -190,6 +251,54 @@ public class Tokenizer implements TokenProducer {
     }
 
     public Tokens.Token object() {
+        
+        if (scanner.hasMore()) {
+            ScannerToken nextToken = scanner.peekNextToken();
+            
+            if (nextToken.isError()) {
+                return error("Got error from scanner: "+nextToken.getValue());
+            }
+            
+            if (!nextToken.isOperator()) {
+                return error("Expected end of object or start of property, but found (" + nextToken.toString() + ")");
+            }
+            
+            return switch (nextToken.getValue()) {
+                case "{" -> {
+                    scanner.discardNextToken();
+                    context.push(Context.IN_OBJECT);
+                    stack.push(State.OBJECT);
+                    nextState = State.PROPERTY;
+                    yield new Tokens.StartObject();
+                }
+                case "," -> {
+                    if (stack.peek() == State.PROPERTY) {
+                        yield endProperty();
+                    }
+                    
+                    scanner.discardNextToken();
+                    yield property();
+                }
+                case "}" -> {
+                    // XXX - check if the state is not empty
+                    if (stack.peek() == State.PROPERTY) {
+                        yield endProperty();
+                    }
+                    scanner.discardNextToken();
+                    // XXX - check if the context is not empty and peek() == IN_OBJECT
+                    context.pop();
+                    // XXX - check if the stack is not empty and peek() == OBJECT
+                    stack.pop();
+                    nextState = stack.peek(); // restore the previous one
+                    yield new Tokens.EndObject();
+                }
+                default -> error("Expected end of object or start of property operator, but found (" + nextToken.getValue() + ")");
+            };
+        } else {
+            return error("object() expected more scanner tokens");
+        }
+        
+        /*
         Optional<Character> character = buffer.skipWhitespaceAndPeek();
 
         return character.map((c) -> {
@@ -223,9 +332,40 @@ public class Tokenizer implements TokenProducer {
                     return error("Expected end of object or start of property, but found ("+c+")");
             }
         }).orElseGet(() -> error("object() expected more characters"));
+        
+         */
     }
 
     public Tokens.Token property() {
+        if (scanner.hasMore()) {
+            ScannerToken nextToken = scanner.peekNextToken();
+            
+            if (nextToken.isError()) {
+                return error("Got error from scanner: "+nextToken.getValue());
+            } else if (nextToken.isString()) {
+                context.push(Context.IN_PROPERTY);
+                stack.push(State.PROPERTY);
+                nextState = State.KEY_LITERAL;
+                return new Tokens.StartProperty();
+            } else if (nextToken.isOperator() && nextToken.getValue().equals(":")) {
+                // XXX - check to be sure we are still in property state here
+                scanner.discardNextToken();   // skip over the :
+                Tokens.Token value = start(); // and grab whatever value we find
+                // XXX - check if the Token is an ErrorToken, in which case just return it
+                //       although perhaps we want to set an ERROR state too?? hmmm
+                // XXX - check to be sure we are back in the same property state again
+                if (nextState == null) nextState = State.END_PROPERTY;
+                return value;
+            }
+            else {
+                return object();
+            }
+            
+        } else {
+            return error("property() expected more scanner tokens");
+        }
+        
+        /*
         Optional<Character> character = buffer.skipWhitespaceAndPeek();
 
         return character.map((c) -> {
@@ -248,6 +388,7 @@ public class Tokenizer implements TokenProducer {
                     return object();
             }
         }).orElseGet(() -> error("property() expected more characters"));
+         */
     }
 
     public Tokens.Token endProperty() {
@@ -333,6 +474,13 @@ public class Tokenizer implements TokenProducer {
     }
     
     public Tokens.Token keyLiteral() {
+        ScannerToken nextToken = scanner.getNextToken();
+        if (nextToken.isError()) {
+            return error("Got error from scanner: "+nextToken.getValue());
+        }
+        nextState = State.PROPERTY; // return to caller state
+        return new Tokens.AddKey(nextToken.getValue());
+        /*
         Optional<Character> character = buffer.getNext(); // grab the quote character
         
         return character.map((c) -> {
@@ -348,9 +496,17 @@ public class Tokenizer implements TokenProducer {
             nextState = State.PROPERTY; // return to caller state
             return new Tokens.AddKey(str);
         }).orElseGet(() -> error("keyLiteral() expected more characters"));
+         */
     }
     
     public Tokens.Token stringLiteral() {
+        ScannerToken nextToken = scanner.getNextToken();
+        if (nextToken.isError()) {
+            return error("Got error from scanner: "+nextToken.getValue());
+        }
+        nextState = stack.peek(); // return to caller state
+        return new Tokens.AddString(nextToken.getValue());
+        /*
         Optional<Character> character = buffer.getNext(); // grab the quote character
         
         return character.map((c) -> {
@@ -366,9 +522,27 @@ public class Tokenizer implements TokenProducer {
             nextState = stack.peek(); // return to caller state
             return new Tokens.AddString(str);
         }).orElseGet(() -> error("stringLiteral() expected more characters"));
+        
+         */
     }
 
     public Tokens.Token numericLiteral() {
+        ScannerToken nextToken = scanner.getNextToken();
+        
+        if (nextToken.isError()) {
+            return error("Got error from scanner: "+nextToken.getValue());
+        }
+        
+        nextState = stack.peek(); // return to caller state
+        if (nextToken.isInteger()) {
+            return new Tokens.AddInt(Integer.parseInt(nextToken.getValue()));
+        } else if (nextToken.isFloat()) {
+            return new Tokens.AddFloat(Float.parseFloat(nextToken.getValue()));
+        } else {
+            return error("Expected Int or Float Scanner token, not "+nextToken);
+        }
+        
+        /*
         Optional<Character> character = buffer.getNext();
 
         return character.map((c) -> {
@@ -388,6 +562,7 @@ public class Tokenizer implements TokenProducer {
                 return new Tokens.AddInt(Integer.parseInt(num));
             }
         }).orElseGet(() -> error("numericLiteral() expected more characters"));
+         */
     }
     
     private boolean matchLiteral(String expected) {
@@ -405,6 +580,9 @@ public class Tokenizer implements TokenProducer {
     }
 
     public Tokens.Token falseLiteral() {
+        ScannerToken nextToken = scanner.getNextToken();
+        return new Tokens.AddFalse();
+        /*
         Optional<Character> character = buffer.getNext();
         
         return character.map((c) -> {
@@ -419,9 +597,14 @@ public class Tokenizer implements TokenProducer {
                 return error("Bad `false` token");
             }
         }).orElseGet(() -> error("falseLiteral() expected more characters"));
+        
+         */
     }
 
     public Tokens.Token trueLiteral() {
+        ScannerToken nextToken = scanner.getNextToken();
+        return new Tokens.AddTrue();
+        /*
         Optional<Character> character = buffer.getNext();
         
         return character.map((c) -> {
@@ -436,9 +619,14 @@ public class Tokenizer implements TokenProducer {
                 return error("Bad `true` token");
             }
         }).orElseGet(() -> error("trueLiteral() expected more characters"));
+        
+         */
     }
 
     public Tokens.Token nullLiteral() {
+        ScannerToken nextToken = scanner.getNextToken();
+        return new Tokens.AddNull();
+        /*
         Optional<Character> character = buffer.getNext();
         
         return character.map((c) -> {
@@ -453,6 +641,8 @@ public class Tokenizer implements TokenProducer {
                 return error("Bad `null` token");
             }
         }).orElseGet(() -> error("nullLiteral() expected more characters"));
+        
+         */
     }
 
     public Tokens.Token error(String msg) {
