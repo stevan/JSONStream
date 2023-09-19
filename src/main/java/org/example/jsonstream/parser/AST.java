@@ -60,7 +60,7 @@ public class AST {
         public PropertyNode addValue(Node v) { value = v; return this; }
         
         public String toJSON() {
-            return key + ":" + value.toJSON();
+            return "\"" + key + "\":" + value.toJSON();
         }
     }
     
@@ -85,7 +85,7 @@ public class AST {
         public String getValue() { return value; }
         
         public String toJSON() {
-            return value;
+            return "\"" + value + "\"";
         }
     }
     

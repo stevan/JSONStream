@@ -344,7 +344,8 @@ public class Tokenizer implements TokenProducer {
             return error("Got error from scanner: "+nextToken.getValue());
         }
         nextState = State.PROPERTY; // return to caller state
-        return new Tokens.AddKey(nextToken.getValue());
+        String key = nextToken.getValue();
+        return new Tokens.AddKey(key.substring(1,key.lastIndexOf("\"")));
     }
     
     public Tokens.Token stringLiteral() {
@@ -353,7 +354,8 @@ public class Tokenizer implements TokenProducer {
             return error("Got error from scanner: "+nextToken.getValue());
         }
         nextState = stack.peek(); // return to caller state
-        return new Tokens.AddString(nextToken.getValue());
+        String str = nextToken.getValue();
+        return new Tokens.AddString(str.substring(1,str.lastIndexOf("\"")));
     }
 
     public Tokens.Token numericLiteral() {

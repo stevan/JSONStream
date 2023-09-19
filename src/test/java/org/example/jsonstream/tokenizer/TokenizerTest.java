@@ -111,7 +111,7 @@ class TokenizerTest {
                 checkAddFloatToken(t, 3.14F);
             checkNextToken(t, EndItem.class);
             checkNextToken(t, StartItem.class);
-                checkAddStringToken(t, "\"foo\"");
+                checkAddStringToken(t, "foo");
             checkNextToken(t, EndItem.class);
         checkNextToken(t, EndArray.class);
 
@@ -168,7 +168,7 @@ class TokenizerTest {
 
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "\"foo\"");
+                checkAddKeyToken(t, "foo");
 
         checkNextToken(t, ErrorToken.class);
         assertTrue(t.isInErrorState());
@@ -180,8 +180,8 @@ class TokenizerTest {
 
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "\"foo\"");
-                checkAddStringToken(t, "\"bar\"");
+                checkAddKeyToken(t, "foo");
+                checkAddStringToken(t, "bar");
             checkNextToken(t, EndProperty.class);
         checkNextToken(t, EndObject.class);
 
@@ -195,7 +195,7 @@ class TokenizerTest {
         
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "\"foo\"");
+                checkAddKeyToken(t, "foo");
                 checkAddIntToken(t, 10);
             checkNextToken(t, EndProperty.class);
         checkNextToken(t, EndObject.class);
@@ -210,7 +210,7 @@ class TokenizerTest {
         
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "\"foo\"");
+                checkAddKeyToken(t, "foo");
                 checkNextToken(t, AddFalse.class);
             checkNextToken(t, EndProperty.class);
         checkNextToken(t, EndObject.class);
@@ -225,7 +225,7 @@ class TokenizerTest {
         
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "\"foo\"");
+                checkAddKeyToken(t, "foo");
                 checkNextToken(t, AddTrue.class);
             checkNextToken(t, EndProperty.class);
         checkNextToken(t, EndObject.class);
@@ -240,7 +240,7 @@ class TokenizerTest {
         
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "\"foo\"");
+                checkAddKeyToken(t, "foo");
                 checkNextToken(t, AddNull.class);
             checkNextToken(t, EndProperty.class);
         checkNextToken(t, EndObject.class);
@@ -255,7 +255,7 @@ class TokenizerTest {
 
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "\"foo\"");
+                checkAddKeyToken(t, "foo");
                 checkNextToken(t, StartObject.class);
                 checkNextToken(t, EndObject.class);
             checkNextToken(t, EndProperty.class);
@@ -271,12 +271,12 @@ class TokenizerTest {
         
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "\"foo\"");
-                checkAddStringToken(t, "\"bar\"");
+                checkAddKeyToken(t, "foo");
+                checkAddStringToken(t, "bar");
             checkNextToken(t, EndProperty.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "\"baz\"");
-                checkAddStringToken(t, "\"gorch\"");
+                checkAddKeyToken(t, "baz");
+                checkAddStringToken(t, "gorch");
             checkNextToken(t, EndProperty.class);
         checkNextToken(t, EndObject.class);
 
@@ -290,11 +290,11 @@ class TokenizerTest {
         
         checkNextToken(t, StartObject.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "\"foo\"");
-                checkAddStringToken(t, "\"bar\"");
+                checkAddKeyToken(t, "foo");
+                checkAddStringToken(t, "bar");
             checkNextToken(t, EndProperty.class);
             checkNextToken(t, StartProperty.class);
-                checkAddKeyToken(t, "\"baz\"");
+                checkAddKeyToken(t, "baz");
                 checkAddFloatToken(t, 3.14F);
             checkNextToken(t, EndProperty.class);
         checkNextToken(t, EndObject.class);
@@ -328,7 +328,7 @@ class TokenizerTest {
             checkNextToken(t, StartItem.class);
                 checkNextToken(t, StartObject.class);
                     checkNextToken(t, StartProperty.class);
-                        checkAddKeyToken(t, "\"foo\"");
+                        checkAddKeyToken(t, "foo");
                         checkNextToken(t, AddTrue.class);
                     checkNextToken(t, EndProperty.class);
                 checkNextToken(t, EndObject.class);
