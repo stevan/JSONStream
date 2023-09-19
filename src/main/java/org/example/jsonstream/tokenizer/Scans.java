@@ -1,6 +1,6 @@
 package org.example.jsonstream.tokenizer;
 
-public interface Scans {
+public class Scans {
     enum TokenType {
         OPERATOR, KEYWORD, STRING, INTEGER, FLOAT, ERROR, END
     }
