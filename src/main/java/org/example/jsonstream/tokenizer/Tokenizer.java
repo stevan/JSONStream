@@ -106,7 +106,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token root() {
         if (scanner.hasMore()) {
-            Scan nextToken = scanner.peekNextScan();
+            Scans.Scan nextToken = scanner.peekNextScan();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -115,7 +115,7 @@ public class Tokenizer implements TokenProducer {
             return switch (nextToken.getValue()) {
                 case "{" -> object();
                 case "[" -> array();
-                default -> error("The root node must be either an Object({}) or an Array([])");
+                default  -> error("The root node must be either an Object({}) or an Array([])");
             };
         } else {
             return end();
@@ -124,7 +124,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token start() {
         if (scanner.hasMore()) {
-            Scan nextToken = scanner.peekNextScan();
+            Scans.Scan nextToken = scanner.peekNextScan();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -162,7 +162,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token object() {
         if (scanner.hasMore()) {
-            Scan nextToken = scanner.peekNextScan();
+            Scans.Scan nextToken = scanner.peekNextScan();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -210,7 +210,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token property() {
         if (scanner.hasMore()) {
-            Scan nextToken = scanner.peekNextScan();
+            Scans.Scan nextToken = scanner.peekNextScan();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -249,7 +249,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token array() {
         if (scanner.hasMore()) {
-            Scan nextToken = scanner.peekNextScan();
+            Scans.Scan nextToken = scanner.peekNextScan();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -297,7 +297,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token item() {
         if (scanner.hasMore()) {
-            Scan nextToken = scanner.peekNextScan();
+            Scans.Scan nextToken = scanner.peekNextScan();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -340,7 +340,7 @@ public class Tokenizer implements TokenProducer {
     }
     
     public Tokens.Token keyLiteral() {
-        Scan nextToken = scanner.getNextScan();
+        Scans.Scan nextToken = scanner.getNextScan();
         if (nextToken.isError()) {
             return error("Got error from scanner: "+nextToken.getValue());
         }
@@ -350,7 +350,7 @@ public class Tokenizer implements TokenProducer {
     }
     
     public Tokens.Token stringLiteral() {
-        Scan nextToken = scanner.getNextScan();
+        Scans.Scan nextToken = scanner.getNextScan();
         if (nextToken.isError()) {
             return error("Got error from scanner: "+nextToken.getValue());
         }
@@ -360,7 +360,7 @@ public class Tokenizer implements TokenProducer {
     }
 
     public Tokens.Token numericLiteral() {
-        Scan nextToken = scanner.getNextScan();
+        Scans.Scan nextToken = scanner.getNextScan();
         
         if (nextToken.isError()) {
             return error("Got error from scanner: "+nextToken.getValue());

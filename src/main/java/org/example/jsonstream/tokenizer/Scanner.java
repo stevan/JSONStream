@@ -16,7 +16,7 @@ public class Scanner {
     
     // public
     
-    public Stream<Scan> stream() {
+    public Stream<Scans.Scan> stream() {
         return Stream.iterate(
             getNextScan(),
             (t) -> !t.isTerminal(),
@@ -24,10 +24,10 @@ public class Scanner {
         );
     }
     
-    public Iterator<Scan> iterator() {
+    public Iterator<Scans.Scan> iterator() {
         return new Iterator<>() {
             public boolean hasNext() { return hasMore(); }
-            public Scan next() { return getNextScan(); }
+            public Scans.Scan next() { return getNextScan(); }
         };
     }
     
@@ -38,18 +38,18 @@ public class Scanner {
         return index < source.length;
     }
     
-    public Scan peekNextScan() {
+    public Scans.Scan peekNextScan() {
         int temp = index;
-        Scan token = getNextScan();
+        Scans.Scan token = getNextScan();
         index = temp;
         return token;
     }
     
-    public Scan getNextScan() {
+    public Scans.Scan getNextScan() {
         // consume any whitespace
         while (hasMore() && Character.isWhitespace(source[index])) index++;
         // end it if we are done
-        if (isDone()) return Scan.end();
+        if (isDone()) return new Scans.End();
         
         return switch (source[index]) {
             case '{', '}', '[', ']', ',', ':' -> getOperator();
@@ -66,22 +66,22 @@ public class Scanner {
     
     // private
     
-    private Scan getOperator() {
-        return Scan.operator(source[index++] + "");
+    private Scans.Scan getOperator() {
+        return new Scans.Operator(source[index++] + "");
     }
     
-    private Scan getConstant() {
+    private Scans.Scan getConstant() {
         return switch (source[index]) {
             case '"' -> getStringConstant();
             case '-' -> getNumericConstant();
             default  ->
                 (Character.isDigit(source[index])
                      ? getNumericConstant()
-                     : Scan.error("Expected number or string, found ("+source[index]+")"));
+                     : new Scans.Error("Expected number or string, found ("+source[index]+")"));
         };
     }
     
-    private Scan getStringConstant() {
+    private Scans.Scan getStringConstant() {
         StringBuilder acc = new StringBuilder();
         // grab the quote
         acc.append(source[index++]);
@@ -98,26 +98,26 @@ public class Scanner {
         // TODO - check for unterminated string
         //  constant and escape sequences
         
-        return Scan.constant(acc.toString(), Scan.TokenType.STRING);
+        return new Scans.Constant(acc.toString(), Scans.TokenType.STRING);
     }
     
-    private Scan getNumericConstant() {
+    private Scans.Scan getNumericConstant() {
         StringBuilder acc = new StringBuilder();
         
         if (source[index] == '-') {
             acc.append(source[index++]);
         }
         
-        Scan.TokenType type = Scan.TokenType.INTEGER;
+        Scans.TokenType type = Scans.TokenType.INTEGER;
         
         OUTER: while (hasMore()) {
             switch (source[index]) {
                 case '.' -> {
                     acc.append(source[index++]);
-                    type = Scan.TokenType.FLOAT;
+                    type = Scans.TokenType.FLOAT;
                 }
                 case 'e' -> {
-                    return Scan.error("Scientific notation not supported (yet)");
+                    return new Scans.Error("Scientific notation not supported (yet)");
                 }
                 default -> {
                     if (Character.isDigit(source[index])) {
@@ -128,24 +128,24 @@ public class Scanner {
                 }
             }
         }
-        return Scan.constant(acc.toString(), type);
+        return new Scans.Constant(acc.toString(), type);
     }
     
-    private Scan getKeyword(char ... expected) {
+    private Scans.Scan getKeyword(char ... expected) {
         StringBuilder acc = new StringBuilder();
         
         for (char c : expected) {
             if (source[index] == c) {
                 acc.append(source[index++]);
             } else {
-                return Scan.error(
+                return new Scans.Error(
                     "Expected keyword(" + Arrays.toString(expected)
                         + ") but got(" + acc + "«" + source[index] + "»)"
                 );
             }
         }
         
-        return Scan.keyword(acc.toString());
+        return new Scans.Keyword(acc.toString());
     }
     
     @Override

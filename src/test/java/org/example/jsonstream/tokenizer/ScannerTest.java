@@ -15,7 +15,7 @@ class ScannerTest {
     void ScannerTest_Basic () {
         Scanner scanner = new Scanner(SOURCE);
         
-        List<Scan> tokens = new ArrayList<>();
+        List<Scans.Scan> tokens = new ArrayList<>();
         while (scanner.hasMore()) {
             tokens.add(scanner.getNextScan());
         }
@@ -27,7 +27,7 @@ class ScannerTest {
     void ScannerTest_Stream () {
         Scanner scanner = new Scanner(SOURCE);
         
-        List<Scan> tokens = scanner.stream().collect(Collectors.toList());
+        List<Scans.Scan> tokens = scanner.stream().collect(Collectors.toList());
         
         testTokenList(tokens);
     }
@@ -36,9 +36,9 @@ class ScannerTest {
     void ScannerTest_BasicIterator () {
         Scanner scanner = new Scanner(SOURCE);
         
-        Iterator<Scan> tokenIterator = scanner.iterator();
+        Iterator<Scans.Scan> tokenIterator = scanner.iterator();
         
-        List<Scan> tokens = new ArrayList<>();
+        List<Scans.Scan> tokens = new ArrayList<>();
         while (tokenIterator.hasNext()) {
             tokens.add(tokenIterator.next());
         }
@@ -46,7 +46,7 @@ class ScannerTest {
         testTokenList(tokens);
     }
     
-    private static void testTokenList(List<Scan> tokens) {
+    private static void testTokenList(List<Scans.Scan> tokens) {
         assertEquals(tokens.size(), 17);
         
         assertTrue(tokens.get(0).isOperator());
