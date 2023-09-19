@@ -12,11 +12,11 @@ class ASTTest {
         AST.ObjectNode o = AST.newObject()
             .addProperty(
                 AST.newProperty()
-                    .addKey("foo")
+                    .addKey("\"foo\"")
                     .addValue(AST.newTrue()))
             .addProperty(
                 AST.newProperty()
-                    .addKey("bar")
+                    .addKey("\"bar\"")
                     .addValue(
                         AST.newArray()
                             .addItem(AST.newItem(AST.newNull()))
@@ -24,13 +24,13 @@ class ASTTest {
                             .addItem(AST.newItem(AST.newObject()))))
             .addProperty(
                 AST.newProperty()
-                    .addKey("baz")
+                    .addKey("\"baz\"")
                     .addValue(
                         AST.newArray()
                             .addItem(AST.newItem(AST.newFalse()))
                             .addItem(AST.newItem(AST.newFloat(3.14F)))
                             .addItem(AST.newItem(AST.newArray()))
-                            .addItem(AST.newItem(AST.newString("gorch")))));
+                            .addItem(AST.newItem(AST.newString("\"gorch\"")))));
         
         assertEquals("{\"foo\":true,\"bar\":[null,10,{}],\"baz\":[false,3.14,[],\"gorch\"]}", o.toJSON());
     }

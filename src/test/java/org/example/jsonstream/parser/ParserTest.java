@@ -12,8 +12,8 @@ class ParserTest {
     void consumeTokensFromTokenizer() {
         final String expected = "{\"foo\":true,\"bar\":[10,3.14,{},null],\"baz\":false}";
         
-        CharacterStream buffer = new CharacterStream(expected);
-        Tokenizer tokenizer = new Tokenizer(buffer);
+        Scanner scanner = new Scanner(expected);
+        Tokenizer tokenizer = new Tokenizer(scanner);
         Parser parser = new Parser();
         
         tokenizer.stream().forEach(parser::consumeToken);
@@ -27,8 +27,8 @@ class ParserTest {
     void consumeTokensFromTokenizerWithArrayRoot() {
         final String expected = "[100,1.332277,{\"foo\":true,\"bar\":[10,3.14,{},null],\"baz\":false},null,null,null]";
         
-        CharacterStream buffer = new CharacterStream(expected);
-        Tokenizer tokenizer = new Tokenizer(buffer);
+        Scanner scanner = new Scanner(expected);
+        Tokenizer tokenizer = new Tokenizer(scanner);
         Parser parser = new Parser();
         
         tokenizer.stream().forEach(parser::consumeToken);

@@ -52,8 +52,7 @@ class TokenConsumerTest {
     
     @Test
     void consumeToken_Basic() {
-        CharacterStream b = new CharacterStream("[10]");
-        Tokenizer t = new Tokenizer(b);
+        Tokenizer t = new Tokenizer(new Scanner("[10]"));
         
         BasicConsumer o = new BasicConsumer();
         BasicConsumer o2 = new BasicConsumer();

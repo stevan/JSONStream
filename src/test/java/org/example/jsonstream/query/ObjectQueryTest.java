@@ -12,8 +12,8 @@ class ObjectQueryTest {
     @Test
     void ObjectQuery_Basic () {
         
-        CharacterStream buffer = new CharacterStream("{\"foo\":10,\"baz\":[true,10,{\"gorch\":35},[100,false]],\"bar\":3.14}");
-        Tokenizer tokenizer = new Tokenizer(buffer);
+        Scanner scanner = new Scanner("{\"foo\":10,\"baz\":[true,10,{\"gorch\":35},[100,false]],\"bar\":3.14}");
+        Tokenizer tokenizer = new Tokenizer(scanner);
         
         Parser parser = new Parser();
         
@@ -43,8 +43,8 @@ class ObjectQueryTest {
     @Test
     void ObjectQuery_WithTokenProducer () {
         
-        CharacterStream buffer = new CharacterStream("{\"foo\":10,\"baz\":[true,10,{\"gorch\":35},[100,false]],\"bar\":3.14}");
-        Tokenizer tokenizer = new Tokenizer(buffer);
+        Scanner scanner = new Scanner("{\"foo\":10,\"baz\":[true,10,{\"gorch\":35},[100,false]],\"bar\":3.14}");
+        Tokenizer tokenizer = new Tokenizer(scanner);
         
         List<Tokens.Token> tokens = tokenizer.stream().collect(Collectors.toList());
         
