@@ -11,6 +11,9 @@ public interface TokenProducer {
     
     static TokenProducer of(List<Tokens.Token> tokens) {
         Iterator<Tokens.Token> i = tokens.iterator();
+        // TODO - make this a concrete class, but
+        //  since it is not likely to be used a lot
+        //  then we can put this off ;)
         return new TokenProducer(){
             public Tokens.Token produceToken() {
                 if (i.hasNext()) return i.next();

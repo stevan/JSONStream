@@ -98,7 +98,7 @@ public class Scanner {
         // TODO - check for unterminated string
         //  constant and escape sequences
         
-        return new Scans.Constant(acc.toString(), Scans.TokenType.STRING);
+        return new Scans.Constant(acc.toString(), Scans.ScanType.STRING);
     }
     
     private Scans.Scan getNumericConstant() {
@@ -108,13 +108,13 @@ public class Scanner {
             acc.append(source[index++]);
         }
         
-        Scans.TokenType type = Scans.TokenType.INTEGER;
+        Scans.ScanType type = Scans.ScanType.INTEGER;
         
         OUTER: while (hasMore()) {
             switch (source[index]) {
                 case '.' -> {
                     acc.append(source[index++]);
-                    type = Scans.TokenType.FLOAT;
+                    type = Scans.ScanType.FLOAT;
                 }
                 case 'e' -> {
                     return new Scans.Error("Scientific notation not supported (yet)");

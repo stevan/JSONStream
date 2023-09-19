@@ -97,6 +97,7 @@ public class Tokenizer implements TokenProducer {
                 error("Unknown Error");
         };
         
+        // TODO - set this via the constructor, not like this
         token.setContext(captureContext());
 
         return token;
