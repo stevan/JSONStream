@@ -51,7 +51,6 @@ public class Tokenizer implements TokenProducer {
 
     public boolean isInErrorState () { return nextState == State.ERROR; }
     public boolean isInEndState () { return nextState == State.END; }
-    // TODO: add some other state predicates here, as needed
     
     public boolean isDone() {
         return isInEndState() || isInErrorState();
@@ -98,14 +97,16 @@ public class Tokenizer implements TokenProducer {
                 error("Unknown Error");
         };
         
-        token.setContext(context.toArray(new Context[]{}));
+        token.setContext(captureContext());
 
         return token;
     }
+    
+    private Context[] captureContext() { return context.toArray(new Context[]{}); }
 
     public Tokens.Token root() {
         if (scanner.hasMore()) {
-            Scan nextToken = scanner.peekNextToken();
+            Scan nextToken = scanner.peekNextScan();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -123,7 +124,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token start() {
         if (scanner.hasMore()) {
-            Scan nextToken = scanner.peekNextToken();
+            Scan nextToken = scanner.peekNextScan();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -161,7 +162,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token object() {
         if (scanner.hasMore()) {
-            Scan nextToken = scanner.peekNextToken();
+            Scan nextToken = scanner.peekNextScan();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -173,7 +174,7 @@ public class Tokenizer implements TokenProducer {
             
             return switch (nextToken.getValue()) {
                 case "{" -> {
-                    scanner.discardNextToken();
+                    scanner.discardNextScan();
                     context.push(Context.IN_OBJECT);
                     stack.push(State.OBJECT);
                     nextState = State.PROPERTY;
@@ -184,7 +185,7 @@ public class Tokenizer implements TokenProducer {
                         yield endProperty();
                     }
                     
-                    scanner.discardNextToken();
+                    scanner.discardNextScan();
                     yield property();
                 }
                 case "}" -> {
@@ -192,7 +193,7 @@ public class Tokenizer implements TokenProducer {
                     if (stack.peek() == State.PROPERTY) {
                         yield endProperty();
                     }
-                    scanner.discardNextToken();
+                    scanner.discardNextScan();
                     // TODO - check if the context is not empty and peek() == IN_OBJECT
                     context.pop();
                     // TODO - check if the stack is not empty and peek() == OBJECT
@@ -209,7 +210,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token property() {
         if (scanner.hasMore()) {
-            Scan nextToken = scanner.peekNextToken();
+            Scan nextToken = scanner.peekNextScan();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -220,7 +221,7 @@ public class Tokenizer implements TokenProducer {
                 return new Tokens.StartProperty();
             } else if (nextToken.isOperator() && nextToken.getValue().equals(":")) {
                 // TODO - check to be sure we are still in property state here
-                scanner.discardNextToken();   // skip over the :
+                scanner.discardNextScan();   // skip over the :
                 Tokens.Token value = start(); // and grab whatever value we find
                 // TODO - check if the Token is an ErrorToken, in which case just return it
                 //       although perhaps we want to set an ERROR state too?? hmmm
@@ -248,7 +249,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token array() {
         if (scanner.hasMore()) {
-            Scan nextToken = scanner.peekNextToken();
+            Scan nextToken = scanner.peekNextScan();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -260,7 +261,7 @@ public class Tokenizer implements TokenProducer {
             
             return switch (nextToken.getValue()) {
                 case "[" -> {
-                    scanner.discardNextToken();
+                    scanner.discardNextScan();
                     context.push(Context.IN_ARRAY);
                     stack.push(State.ARRAY);
                     nextState = State.ITEM;
@@ -270,7 +271,7 @@ public class Tokenizer implements TokenProducer {
                     if (stack.peek() == State.ITEM) {
                         yield endItem();
                     }
-                    scanner.discardNextToken();
+                    scanner.discardNextScan();
                     yield item();
                 }
                 case "]" -> {
@@ -278,7 +279,7 @@ public class Tokenizer implements TokenProducer {
                     if (stack.peek() == State.ITEM) {
                         yield endItem();
                     }
-                    scanner.discardNextToken();
+                    scanner.discardNextScan();
                     // TODO - check if the context is not empty and peek() == IN_ARRAY
                     context.pop();
                     // TODO - check if the stack is not empty and peek() == ARRAY
@@ -296,7 +297,7 @@ public class Tokenizer implements TokenProducer {
 
     public Tokens.Token item() {
         if (scanner.hasMore()) {
-            Scan nextToken = scanner.peekNextToken();
+            Scan nextToken = scanner.peekNextScan();
             
             if (nextToken.isError()) {
                 return error("Got error from scanner: "+nextToken.getValue());
@@ -339,7 +340,7 @@ public class Tokenizer implements TokenProducer {
     }
     
     public Tokens.Token keyLiteral() {
-        Scan nextToken = scanner.getNextToken();
+        Scan nextToken = scanner.getNextScan();
         if (nextToken.isError()) {
             return error("Got error from scanner: "+nextToken.getValue());
         }
@@ -349,7 +350,7 @@ public class Tokenizer implements TokenProducer {
     }
     
     public Tokens.Token stringLiteral() {
-        Scan nextToken = scanner.getNextToken();
+        Scan nextToken = scanner.getNextScan();
         if (nextToken.isError()) {
             return error("Got error from scanner: "+nextToken.getValue());
         }
@@ -359,7 +360,7 @@ public class Tokenizer implements TokenProducer {
     }
 
     public Tokens.Token numericLiteral() {
-        Scan nextToken = scanner.getNextToken();
+        Scan nextToken = scanner.getNextScan();
         
         if (nextToken.isError()) {
             return error("Got error from scanner: "+nextToken.getValue());
@@ -376,19 +377,19 @@ public class Tokenizer implements TokenProducer {
     }
 
     public Tokens.Token falseLiteral() {
-        scanner.discardNextToken();
+        scanner.discardNextScan();
         // TODO - check for errors and the correct token here
         return new Tokens.AddFalse();
     }
 
     public Tokens.Token trueLiteral() {
-        scanner.discardNextToken();
+        scanner.discardNextScan();
         // TODO - check for errors and the correct token here
         return new Tokens.AddTrue();
     }
 
     public Tokens.Token nullLiteral() {
-        scanner.discardNextToken();
+        scanner.discardNextScan();
         // TODO - check for errors and the correct token here
         return new Tokens.AddNull();
     }

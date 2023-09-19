@@ -18,39 +18,34 @@ public class Scanner {
     
     public Stream<Scan> stream() {
         return Stream.iterate(
-            getNextToken(),
+            getNextScan(),
             (t) -> !t.isTerminal(),
-            (t) -> getNextToken()
+            (t) -> getNextScan()
         );
     }
     
     public Iterator<Scan> iterator() {
         return new Iterator<>() {
             public boolean hasNext() { return hasMore(); }
-            public Scan next() { return getNextToken(); }
+            public Scan next() { return getNextScan(); }
         };
     }
     
     public boolean isDone() {
         return index >= source.length;
     }
-    
     public boolean hasMore() {
         return index < source.length;
     }
     
-    public Scan peekNextToken() {
+    public Scan peekNextScan() {
         int temp = index;
-        Scan token = getNextToken();
+        Scan token = getNextScan();
         index = temp;
         return token;
     }
     
-    public void discardNextToken() {
-        getNextToken();
-    }
-    
-    public Scan getNextToken() {
+    public Scan getNextScan() {
         // consume any whitespace
         while (hasMore() && Character.isWhitespace(source[index])) index++;
         // end it if we are done
@@ -63,6 +58,10 @@ public class Scanner {
             case 'n' -> getKeyword('n', 'u', 'l', 'l');
             default  -> getConstant();
         };
+    }
+    
+    public void discardNextScan() {
+        getNextScan();
     }
     
     // private

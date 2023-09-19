@@ -42,12 +42,12 @@ public class Tokens {
     }
     
     private static abstract class BasicToken implements Token {
-        private Tokenizer.Context[] context = new Tokenizer.Context[0];
+        private Tokenizer.Context[] context;
 
         private final String name = this.getClass().getSimpleName();
         private final Type type = this.getClass().getAnnotation(TokenType.class).type();
         private final Boolean isTerminal = this.getClass().getAnnotation(TokenType.class).isTerminal();
-
+        
         public String getName() { return name; }
         public Type getType() { return type; }
         

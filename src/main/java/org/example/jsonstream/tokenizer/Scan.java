@@ -10,12 +10,13 @@ public interface Scan {
     boolean isTerminal();
     
     default boolean isOperator() { return getType() == TokenType.OPERATOR; }
-    default boolean isKeyword() { return getType() == TokenType.KEYWORD; }
-    default boolean isError() { return getType() == TokenType.ERROR; }
-    default boolean isEnd() { return getType() == TokenType.END; }
-    default boolean isString() { return getType() == TokenType.STRING; }
-    default boolean isInteger() { return getType() == TokenType.INTEGER; }
-    default boolean isFloat() { return getType() == TokenType.FLOAT; }
+    default boolean isKeyword()  { return getType() == TokenType.KEYWORD;  }
+    default boolean isError()    { return getType() == TokenType.ERROR;    }
+    default boolean isEnd()      { return getType() == TokenType.END;      }
+    default boolean isString()   { return getType() == TokenType.STRING;   }
+    default boolean isInteger()  { return getType() == TokenType.INTEGER;  }
+    default boolean isFloat()    { return getType() == TokenType.FLOAT;    }
+    
     default boolean isNumber() {
         return getType() == TokenType.FLOAT
             || getType() == TokenType.INTEGER;

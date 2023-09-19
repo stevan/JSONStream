@@ -17,8 +17,7 @@ class ScannerTest {
         
         List<Scan> tokens = new ArrayList<>();
         while (scanner.hasMore()) {
-            //System.out.println(scanner.peekNextToken());
-            tokens.add(scanner.getNextToken());
+            tokens.add(scanner.getNextScan());
         }
         
         testTokenList(tokens);
