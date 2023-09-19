@@ -105,51 +105,41 @@ public class Tokenizer implements TokenProducer {
     private Context[] captureContext() { return context.toArray(new Context[]{}); }
 
     public Tokens.Token root() {
-        if (scanner.hasMore()) {
-            Scans.Scan nextToken = scanner.peekNextScan();
-            
-            if (nextToken.isError()) {
-                return error("Got error from scanner: "+nextToken.getValue());
-            }
-            
-            return switch (nextToken.getValue()) {
-                case "{" -> object();
-                case "[" -> array();
-                default  -> error("The root node must be either an Object({}) or an Array([])");
-            };
-        } else {
-            return end();
-        }
+       Scans.Scan scan = scanner.peekNextScan();
+       
+       if (scan.isEnd()) return end();
+       if (scan.isError()) return error("Got error from scanner: "+ scan.getValue());
+       
+       return switch (scan.getValue()) {
+           case "{" -> object();
+           case "[" -> array();
+           default  -> error("The root node must be either an Object({}) or an Array([])");
+       };
     }
 
     public Tokens.Token start() {
-        if (scanner.hasMore()) {
-            Scans.Scan nextToken = scanner.peekNextScan();
-            
-            if (nextToken.isError()) {
-                return error("Got error from scanner: "+nextToken.getValue());
-            }
-            
-            String value = nextToken.getValue();
-            return switch (value) {
-                case "{"     -> object();
-                case "["     -> array();
-                case "true"  -> trueLiteral();
-                case "false" -> falseLiteral();
-                case "null"  -> nullLiteral();
-                default      -> {
-                    if (nextToken.isConstant()) {
-                        if (nextToken.isString()) yield stringLiteral();
-                        else if (nextToken.isNumber()) yield numericLiteral();
-                        else yield error("Expected constant, got "+nextToken);
-                    } else {
-                        yield error("Unrecognized start character (" + value + ")");
-                    }
+        Scans.Scan scan = scanner.peekNextScan();
+        
+        if (scan.isEnd()) return error("Expected a value, got End");
+        if (scan.isError()) return error("Got error from scanner: "+ scan.getValue());
+        
+        String value = scan.getValue();
+        return switch (value) {
+            case "{"     -> object();
+            case "["     -> array();
+            case "true"  -> trueLiteral();
+            case "false" -> falseLiteral();
+            case "null"  -> nullLiteral();
+            default      -> {
+                if (scan.isConstant()) {
+                    if (scan.isString()) yield stringLiteral();
+                    else if (scan.isNumber()) yield numericLiteral();
+                    else yield error("Expected constant, got "+ scan);
+                } else {
+                    yield error("Unrecognized start character (" + value + ")");
                 }
-            };
-        } else {
-            return end();
-        }
+            }
+        };
     }
 
     public Tokens.Token end() {
@@ -161,80 +151,70 @@ public class Tokenizer implements TokenProducer {
     }
 
     public Tokens.Token object() {
-        if (scanner.hasMore()) {
-            Scans.Scan nextToken = scanner.peekNextScan();
-            
-            if (nextToken.isError()) {
-                return error("Got error from scanner: "+nextToken.getValue());
+        Scans.Scan scan = scanner.peekNextScan();
+        
+        if (scan.isEnd()) return error("object() expected more scanner tokens");
+        if (scan.isError()) return error("Got error from scanner: " + scan.getValue());
+        if (!scan.isOperator())
+            return error("Expected end of object or start of property, but found (" + scan + ")");
+        
+        return switch (scan.getValue()) {
+            case "{" -> {
+                scanner.discardNextScan();
+                context.push(Context.IN_OBJECT);
+                stack.push(State.OBJECT);
+                nextState = State.PROPERTY;
+                yield new Tokens.StartObject();
             }
-            
-            if (!nextToken.isOperator()) {
-                return error("Expected end of object or start of property, but found (" + nextToken + ")");
+            case "," -> {
+                if (stack.peek() == State.PROPERTY) {
+                    yield endProperty();
+                }
+                
+                scanner.discardNextScan();
+                yield property();
             }
-            
-            return switch (nextToken.getValue()) {
-                case "{" -> {
-                    scanner.discardNextScan();
-                    context.push(Context.IN_OBJECT);
-                    stack.push(State.OBJECT);
-                    nextState = State.PROPERTY;
-                    yield new Tokens.StartObject();
+            case "}" -> {
+                // TODO - check if the state is not empty
+                if (stack.peek() == State.PROPERTY) {
+                    yield endProperty();
                 }
-                case "," -> {
-                    if (stack.peek() == State.PROPERTY) {
-                        yield endProperty();
-                    }
-                    
-                    scanner.discardNextScan();
-                    yield property();
-                }
-                case "}" -> {
-                    // TODO - check if the state is not empty
-                    if (stack.peek() == State.PROPERTY) {
-                        yield endProperty();
-                    }
-                    scanner.discardNextScan();
-                    // TODO - check if the context is not empty and peek() == IN_OBJECT
-                    context.pop();
-                    // TODO - check if the stack is not empty and peek() == OBJECT
-                    stack.pop();
-                    nextState = stack.peek(); // restore the previous one
-                    yield new Tokens.EndObject();
-                }
-                default -> error("Expected end of object or start of property operator, but found (" + nextToken.getValue() + ")");
-            };
-        } else {
-            return error("object() expected more scanner tokens");
-        }
+                scanner.discardNextScan();
+                // TODO - check if the context is not empty and peek() == IN_OBJECT
+                context.pop();
+                // TODO - check if the stack is not empty and peek() == OBJECT
+                stack.pop();
+                nextState = stack.peek(); // restore the previous one
+                yield new Tokens.EndObject();
+            }
+            default -> error("Expected end of object or start of property operator, but found (" + scan.getValue() + ")");
+        };
     }
 
     public Tokens.Token property() {
-        if (scanner.hasMore()) {
-            Scans.Scan nextToken = scanner.peekNextScan();
-            
-            if (nextToken.isError()) {
-                return error("Got error from scanner: "+nextToken.getValue());
-            } else if (nextToken.isString()) {
-                context.push(Context.IN_PROPERTY);
-                stack.push(State.PROPERTY);
-                nextState = State.KEY_LITERAL;
-                return new Tokens.StartProperty();
-            } else if (nextToken.isOperator() && nextToken.getValue().equals(":")) {
-                // TODO - check to be sure we are still in property state here
-                scanner.discardNextScan();   // skip over the :
-                Tokens.Token value = start(); // and grab whatever value we find
-                // TODO - check if the Token is an ErrorToken, in which case just return it
-                //       although perhaps we want to set an ERROR state too?? hmmm
-                // TODO - check to be sure we are back in the same property state again
-                if (nextState == null) nextState = State.END_PROPERTY;
-                return value;
-            }
-            else {
-                return object();
-            }
-            
-        } else {
+        Scans.Scan scan = scanner.peekNextScan();
+        
+        if (scan.isEnd()) {
             return error("property() expected more scanner tokens");
+        } else if (scan.isError()) {
+            return error("Got error from scanner: "+ scan.getValue());
+        } else if (scan.isString()) {
+            context.push(Context.IN_PROPERTY);
+            stack.push(State.PROPERTY);
+            nextState = State.KEY_LITERAL;
+            return new Tokens.StartProperty();
+        } else if (scan.isOperator() && scan.getValue().equals(":")) {
+            // TODO - check to be sure we are still in property state here
+            scanner.discardNextScan();   // skip over the :
+            Tokens.Token value = start(); // and grab whatever value we find
+            // TODO - check if the Token is an ErrorToken, in which case just return it
+            //       although perhaps we want to set an ERROR state too?? hmmm
+            // TODO - check to be sure we are back in the same property state again
+            if (nextState == null) nextState = State.END_PROPERTY;
+            return value;
+        }
+        else {
+            return object();
         }
     }
 
@@ -248,84 +228,71 @@ public class Tokenizer implements TokenProducer {
     }
 
     public Tokens.Token array() {
-        if (scanner.hasMore()) {
-            Scans.Scan nextToken = scanner.peekNextScan();
-            
-            if (nextToken.isError()) {
-                return error("Got error from scanner: "+nextToken.getValue());
+        Scans.Scan scan = scanner.peekNextScan();
+        
+        if (scan.isEnd()) return error("array() expected more scanner tokens");;
+        if (scan.isError()) return error("Got error from scanner: "+ scan.getValue());
+        if (!scan.isOperator())
+            return error("Expected end of array or start of an item, but found (" + scan + ")");
+        
+        return switch (scan.getValue()) {
+            case "[" -> {
+                scanner.discardNextScan();
+                context.push(Context.IN_ARRAY);
+                stack.push(State.ARRAY);
+                nextState = State.ITEM;
+                yield new Tokens.StartArray();
             }
-            
-            if (!nextToken.isOperator()) {
-                return error("Expected end of array or start of an item, but found (" + nextToken + ")");
+            case "," -> {
+                if (stack.peek() == State.ITEM) {
+                    yield endItem();
+                }
+                scanner.discardNextScan();
+                yield item();
             }
-            
-            return switch (nextToken.getValue()) {
-                case "[" -> {
-                    scanner.discardNextScan();
-                    context.push(Context.IN_ARRAY);
-                    stack.push(State.ARRAY);
-                    nextState = State.ITEM;
-                    yield new Tokens.StartArray();
+            case "]" -> {
+                // TODO - check if the state is not empty
+                if (stack.peek() == State.ITEM) {
+                    yield endItem();
                 }
-                case "," -> {
-                    if (stack.peek() == State.ITEM) {
-                        yield endItem();
-                    }
-                    scanner.discardNextScan();
-                    yield item();
-                }
-                case "]" -> {
-                    // TODO - check if the state is not empty
-                    if (stack.peek() == State.ITEM) {
-                        yield endItem();
-                    }
-                    scanner.discardNextScan();
-                    // TODO - check if the context is not empty and peek() == IN_ARRAY
-                    context.pop();
-                    // TODO - check if the stack is not empty and peek() == ARRAY
-                    stack.pop();
-                    nextState = stack.peek(); // restore the previous one
-                    yield new Tokens.EndArray();
-                }
-                default -> error("Expected array or item, but found (" + nextToken.getValue() + ")");
-            };
-        }
-        else {
-            return error("array() expected more scanner tokens");
-        }
+                scanner.discardNextScan();
+                // TODO - check if the context is not empty and peek() == IN_ARRAY
+                context.pop();
+                // TODO - check if the stack is not empty and peek() == ARRAY
+                stack.pop();
+                nextState = stack.peek(); // restore the previous one
+                yield new Tokens.EndArray();
+            }
+            default -> error("Expected array or item, but found (" + scan.getValue() + ")");
+        };
     }
 
     public Tokens.Token item() {
-        if (scanner.hasMore()) {
-            Scans.Scan nextToken = scanner.peekNextScan();
-            
-            if (nextToken.isError()) {
-                return error("Got error from scanner: "+nextToken.getValue());
-            }
-            
-            if (nextToken.isOperator() && nextToken.getValue().equals("]")) {
-                return array();
-            } else {
-                // if we are in item context
-                if (stack.peek() == State.END_ITEM) {
-                    Tokens.Token value = start(); // grab whatever value we find
-                    // TODO - check if the Token is an ErrorToken, in which case just return it
-                    //       although perhaps we want to set an ERROR state too?? hmmm
-                    // TODO - check to be sure we are back in the same item state again
-                    if (nextState == null) nextState = State.END_ITEM;
-                    return value;
-                }
-                
-                // Handle starting the item
-                // otherwise, start the item and "recurse"
-                context.push(Context.IN_ITEM);
-                stack.push(State.END_ITEM);
-                nextState = State.ITEM;
-                return new Tokens.StartItem();
-            }
-        }
-        else {
+        Scans.Scan scan = scanner.peekNextScan();
+        
+        if (scan.isEnd()) {
             return error("array() expected more scanner tokens");
+        } else if (scan.isError()) {
+            return error("Got error from scanner: "+ scan.getValue());
+        } else if (scan.isOperator() && scan.getValue().equals("]")) {
+            return array();
+        } else {
+            // if we are in item context
+            if (stack.peek() == State.END_ITEM) {
+                Tokens.Token value = start(); // grab whatever value we find
+                // TODO - check if the Token is an ErrorToken, in which case just return it
+                //       although perhaps we want to set an ERROR state too?? hmmm
+                // TODO - check to be sure we are back in the same item state again
+                if (nextState == null) nextState = State.END_ITEM;
+                return value;
+            }
+            
+            // Handle starting the item
+            // otherwise, start the item and "recurse"
+            context.push(Context.IN_ITEM);
+            stack.push(State.END_ITEM);
+            nextState = State.ITEM;
+            return new Tokens.StartItem();
         }
     }
 
@@ -340,39 +307,36 @@ public class Tokenizer implements TokenProducer {
     }
     
     public Tokens.Token keyLiteral() {
-        Scans.Scan nextToken = scanner.getNextScan();
-        if (nextToken.isError()) {
-            return error("Got error from scanner: "+nextToken.getValue());
-        }
+        Scans.Scan scan = scanner.getNextScan();
+        if (scan.isEnd()) return error("Unexpected end of input, expected keyLiteral");
+        if (scan.isError()) return error("Got error from scanner: "+ scan.getValue());
         nextState = State.PROPERTY; // return to caller state
-        String key = nextToken.getValue();
+        String key = scan.getValue();
         return new Tokens.AddKey(key.substring(1,key.lastIndexOf("\"")));
     }
     
     public Tokens.Token stringLiteral() {
-        Scans.Scan nextToken = scanner.getNextScan();
-        if (nextToken.isError()) {
-            return error("Got error from scanner: "+nextToken.getValue());
-        }
+        Scans.Scan scan = scanner.getNextScan();
+        if (scan.isEnd()) return error("Unexpected end of input, expected stringLiteral");
+        if (scan.isError()) return error("Got error from scanner: "+ scan.getValue());
         nextState = stack.peek(); // return to caller state
-        String str = nextToken.getValue();
+        String str = scan.getValue();
         return new Tokens.AddString(str.substring(1,str.lastIndexOf("\"")));
     }
 
     public Tokens.Token numericLiteral() {
-        Scans.Scan nextToken = scanner.getNextScan();
+        Scans.Scan scan = scanner.getNextScan();
         
-        if (nextToken.isError()) {
-            return error("Got error from scanner: "+nextToken.getValue());
-        }
+        if (scan.isEnd()) return error("Unexpected end of input, expected numericLiteral");
+        if (scan.isError()) return error("Got error from scanner: "+ scan.getValue());
         
         nextState = stack.peek(); // return to caller state
-        if (nextToken.isInteger()) {
-            return new Tokens.AddInt(Integer.parseInt(nextToken.getValue()));
-        } else if (nextToken.isFloat()) {
-            return new Tokens.AddFloat(Float.parseFloat(nextToken.getValue()));
+        if (scan.isInteger()) {
+            return new Tokens.AddInt(Integer.parseInt(scan.getValue()));
+        } else if (scan.isFloat()) {
+            return new Tokens.AddFloat(Float.parseFloat(scan.getValue()));
         } else {
-            return error("Expected Int or Float Scanner token, not "+nextToken);
+            return error("Expected Int or Float Scanner token, not "+ scan);
         }
     }
 
